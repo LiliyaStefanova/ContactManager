@@ -14,6 +14,9 @@ public class ContactTest {
     Contact testContact;
     Contact testContact2;
 
+    /**
+     * Creating new objects to use for the test
+     */
     @Before
     public void buildUp(){
 
@@ -22,6 +25,9 @@ public class ContactTest {
 
     }
 
+    /**
+     * Tests if contact ID can be retrieved correctly
+     */
     @Test
     public void getIdTest(){
 
@@ -29,6 +35,9 @@ public class ContactTest {
 
     }
 
+    /**
+     * Tests if contact name can be retrieved correctly
+     */
     @Test
     public void getNameTest(){
 
@@ -36,6 +45,9 @@ public class ContactTest {
 
     }
 
+    /**
+     * Tests if contact notes are returned correctly
+     */
     @Test
     public void getNotesFullTest(){
 
@@ -43,13 +55,19 @@ public class ContactTest {
 
     }
 
+    /**
+     * Tests that empty notes field is returned correctly
+     */
+
     @Test
     public void getNotesEmptyTest(){
 
         assertTrue(testContact2.getNotes().equals(""));
 
     }
-
+    /**
+     * Tests if notes are added correctly to an existing record with no notes
+     */
     @Test
     public void addNotesTest(){
 
