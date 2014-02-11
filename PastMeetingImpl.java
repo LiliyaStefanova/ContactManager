@@ -13,11 +13,11 @@ public class PastMeetingImpl extends MeetingImpl implements PastMeeting {
     private String meetingNotes;
 
     public PastMeetingImpl(int id, Calendar date, Set<Contact> attendees, String text){
+        //using the MeetingImpl constructor
         super(id, date, attendees);
-        if(date.compareTo(getDate())>0){
-            throw new IllegalArgumentException("The date is in the future");
-        }
         this.meetingNotes=text;
+       //no exceptions at constructor level-for meetings in the future
+        //check will be made as part the ContactManager addNewPastMeeting()
     }
 
     @Override
