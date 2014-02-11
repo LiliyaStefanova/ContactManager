@@ -99,6 +99,7 @@ public interface ContactManager {
      * @throws NullPointerException if any of the arguments is null
      */
     void addNewPastMeeting(Set<Contact> contacts, Calendar date, String text);
+
     /**
      * Add notes to a meeting.
      *
@@ -114,6 +115,7 @@ public interface ContactManager {
      * @throws NullPointerException if the notes are null
      */
     void addMeetingNotes(int id, String text);
+
     /**
      * Create a new contact with the specified name and notes.
      *
@@ -122,6 +124,7 @@ public interface ContactManager {
      * @throws NullPointerException if the name or the notes are null
      */
     void addNewContact(String name, String notes);
+
     /**
      * Returns a list containing the contacts that correspond to the IDs.
      *
