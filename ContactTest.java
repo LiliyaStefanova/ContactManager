@@ -7,42 +7,56 @@
  */
 
 import org.junit.*;
-import org.junit.Assert.*;
+import static org.junit.Assert.*;
 
 public class ContactTest {
 
     Contact testContact;
+    Contact testContact2;
 
     @Before
-    public void contactCreator(){
+    public void buildUp(){
 
+    testContact=new ContactImpl(1234, "Steve", "potential sponsor");
+    testContact2=new ContactImpl(2345, "John", ""); //no notes for this contact
 
     }
-
 
     @Test
     public void getIdTest(){
 
+        assertTrue(testContact.getId()==1234);
 
     }
 
     @Test
     public void getNameTest(){
 
+        assertTrue(testContact.getName().equals("Steve"));
+
     }
 
     @Test
     public void getNotesFullTest(){
+
+        assertTrue(testContact.getNotes().equals("potential sponsor"));
 
     }
 
     @Test
     public void getNotesEmptyTest(){
 
+        assertTrue(testContact2.getNotes().equals(""));
+
     }
 
     @Test
     public void addNotesTest(){
 
+        testContact2.addNotes("abcd");
+
+        assertTrue(testContact2.getNotes().equals("abcd"));
+
     }
+
 }
