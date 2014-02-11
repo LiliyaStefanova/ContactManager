@@ -40,7 +40,7 @@ public class MeetingTest {
     public void getMeetingDateTest(){
         Calendar expectedDate=Calendar.getInstance();
         expectedDate.set(2012,Calendar.DECEMBER,11);
-        assertTrue(testMeeting.getDate().equals(expectedDate));
+        assertTrue(expectedDate.equals(testMeeting.getDate()));
 
     }
 
@@ -52,7 +52,9 @@ public class MeetingTest {
         expectedContacts.add(contact1);
         expectedContacts.add(contact2);
 
-        assertTrue(expectedContacts.containsAll(testMeeting.getContacts()));
+        assertEquals(expectedContacts.size(),testMeeting.getContacts().size());
+        //need to fix this one does not work
+        assertTrue(expectedContacts.equals(testMeeting.getContacts()));
 
     }
 
