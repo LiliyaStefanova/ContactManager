@@ -19,21 +19,25 @@ public class ContactImpl implements Contact {
 
     @Override
     public int getId() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+
+        return this.contactID;
     }
 
     @Override
     public String getName() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+
+        return this.contactName;
     }
 
     @Override
     public String getNotes() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+
+        return this.contactNotes;
     }
 
     @Override
     public void addNotes(String note) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        //refactoring needed here-overriding existing notes scenario
+        this.contactNotes=note;
     }
 }
