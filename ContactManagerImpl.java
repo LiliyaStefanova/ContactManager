@@ -24,7 +24,7 @@ public class ContactManagerImpl implements ContactManager {
 
     @Override
     public int addFutureMeeting(Set<Contact> contacts, Calendar date) {
-        //need to add a check here to ensure the id does not exist alread
+        //need to add a check here to ensure the id does not exist already
         Calendar now=Calendar.getInstance();
         //check this is right
         if(date.getTime().compareTo(now.getTime())<0){
@@ -45,22 +45,41 @@ public class ContactManagerImpl implements ContactManager {
 
     @Override
     public PastMeeting getPastMeeting(int id) {
-        PastMeeting result=null;
-        if(allMeetings.get(id)==null){
-            return null;
+        Meeting meeting=null;
+        PastMeeting pastMeeting=null;
+        for(Meeting curr:allMeetings){
+            if(curr.getId()==id){
+                meeting=curr;
+            }
         }
-       else if(allMeetings.get(id) instanceof PastMeeting){
-            result=(PastMeeting) allMeetings.get(id);
+        if(meeting instanceof PastMeeting){
+            pastMeeting=(PastMeeting) meeting;
+
         }
-        else if(allMeetings.get(id) instanceof FutureMeeting){
+        else if(meeting instanceof FutureMeeting){
             throw new IllegalArgumentException("This meeting is happening in the future");
         }
-        return result;
+        return pastMeeting;
     }
 
     @Override
     public FutureMeeting getFutureMeeting(int id) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+
+        Meeting meeting=null;
+        FutureMeeting futureMeeting=null;
+        for(Meeting curr:allMeetings){
+            if(curr.getId()==id){
+                meeting=curr;
+            }
+        }
+        if(meeting instanceof PastMeeting){
+            throw new IllegalArgumentException("This meeting is happening in the past");
+        }
+        else if(meeting instanceof FutureMeeting){
+            futureMeeting=(FutureMeeting) meeting;
+        }
+
+        return futureMeeting;
     }
 
     @Override
@@ -94,15 +113,33 @@ public class ContactManagerImpl implements ContactManager {
     }
 
     @Override
-    public void addNewContact(String name, String notes) {
-        //To change body of implemented methods use File | Settings | File Templates.
+    //changed signature to return int, to allow for testing to be performed
+    public int addNewContact(String name, String notes) {
+
+        int id=generateContactID();
+        Contact newContact=new ContactImpl(id, name, notes);
+        allContacts.add(newContact);
+
+        return newContact.getId();
     }
 
     @Override
     public Set<Contact> getContacts(int... ids) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+        Set<Contact> contacts=new HashSet<Contact>();
+        for (int id : ids) {
+            for (Contact curr : allContacts) {
+                if (curr.getId() == id) {
+                    contacts.add(curr);
+                }
+            }
 
+        }
+        if(contacts.size()!=ids.length) {
+            throw new IllegalArgumentException("ID provided is a for a non-existent contact");
+        }
+
+        return contacts;
+    }
     @Override
     public Set<Contact> getContacts(String name) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
