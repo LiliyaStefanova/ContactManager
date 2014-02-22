@@ -7,31 +7,63 @@
  */
 
 import org.junit.*;
-import org.junit.Assert.*;
+import static org.junit.Assert.*;
 import org.junit.Before;
 
-public class ContactManagerTest {
+import java.util.*;
 
+public class ContactManagerTest {
+    private ContactManager contactManager;
+    private Set<Contact> contacts, emptyContacts;
+    private Calendar pastDate;
+    private Calendar futureDate;
+
+
+    @Before
+    public void buildUp(){
+        contactManager =new ContactManagerImpl();
+        contacts=new HashSet<Contact>();
+        Contact contact1=new ContactImpl(123, "Steve", "accountant");
+        Contact contact2=new ContactImpl(124, "Jane", "Public relations");
+        contacts.add(contact1);
+        contacts.add(contact2);
+      //  emptyContacts.add(new ContactImpl(0, null, null));
+        pastDate=Calendar.getInstance();
+        pastDate.set(2013, Calendar.DECEMBER, 7);
+        futureDate=Calendar.getInstance();
+        futureDate.set(2014, Calendar.MARCH, 30);
+
+
+    }
 
   //Begin meeting test cases
 
     @Test
     public void addFutureMeetingNormalTest(){
 
+        int meetingID= contactManager.addFutureMeeting(contacts, futureDate);
+
+        FutureMeeting meeting= contactManager.getFutureMeeting(meetingID);
+
+        assertNotNull(meeting);
+
+
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void addFutureMeetingInThePastTest(){
-
+        contactManager.addFutureMeeting(contacts, pastDate);
     }
 
     @Test
     public void addFutureMeetingNonExistentContactTest(){
+        contactManager.addFutureMeeting(contacts, futureDate);
 
     }
 
     @Test
     public void getPastMeetingNormalTest(){
+
 
     }
 
