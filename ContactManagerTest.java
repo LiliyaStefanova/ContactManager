@@ -63,7 +63,9 @@ public class ContactManagerTest {
 
     @Test
     public void getPastMeetingNormalTest(){
-
+        String notes="notes";
+        contactManager.addNewPastMeeting(contacts,pastDate,notes );
+        contactManager.addNewPastMeeting(contacts,pastDate,notes );
 
     }
 
@@ -74,6 +76,10 @@ public class ContactManagerTest {
 
     @Test
     public void getFutureMeetingNormalTest(){
+
+        int id=contactManager.addFutureMeeting(contacts, futureDate);
+
+        assertEquals(contactManager.getFutureMeeting(id).getId(), id);
 
     }
 
@@ -212,27 +218,105 @@ public class ContactManagerTest {
     @Test
     public void addNewContactNormalTest(){
 
+       //difficult to test without any returns!
+       int id =contactManager.addNewContact("Liliya", "test");
+
+        assertNotNull(contactManager.getContacts(id));
+
     }
 
     @Test(expected = NullPointerException.class)
     public void addNewContactNameNullTest(){
+
+        contactManager.addNewContact(null, "test");
 
     }
 
     @Test(expected = NullPointerException.class)
     public void addNewContactNotesNullTest(){
 
+        contactManager.addNewContact("Liliya",null);
+
     }
 
     @Test
     public void getContactsNormalTest(){
+        int idTom=contactManager.addNewContact("Tom", "sponsor");
+        int idJane=contactManager.addNewContact("Jane", "sponsor");
+        int idTIm=contactManager.addNewContact("Tim", "sponsor");
+        int id=1234;
+
+        Set<Contact> testContacts=contactManager.getContacts(idTom, idJane, idTIm);
+        assertEquals(3, testContacts.size());
+
+        Contact tom=null;
+        Contact jane=null;
+        Contact tim=null;
+
+        for(Contact curr:testContacts){
+            if(curr.getId()==idTom){
+                tom=curr;
+            }
+            else if(curr.getId()==idJane){
+                jane=curr;
+            }
+            else if(curr.getId()==idTIm){
+                tim=curr;
+            }
+            else{
+                throw new RuntimeException("unexpected contact ID");
+            }
+        }
+
+        assertNotNull(tom);
+        assertNotNull(jane);
+        assertNotNull(tim);
+
+        assertEquals("Tom", tom.getName());
+        assertEquals("Jane", jane.getName());
+        assertEquals("Tim", tim.getName());
 
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void getContactsNonExistentContact(){
+        int idTom=contactManager.addNewContact("Tom", "sponsor");
+        int idJane=contactManager.addNewContact("Jane", "sponsor");
+        int idTIm=contactManager.addNewContact("Tim", "sponsor");
+        int idUnexpected=1234;
+
+        Set<Contact> testContacts=contactManager.getContacts(idTom, idJane, idTIm, idUnexpected);
+        assertEquals(3, testContacts.size());
+
+        Contact tom=null;
+        Contact jane=null;
+        Contact tim=null;
+
+        for(Contact curr:testContacts){
+            if(curr.getId()==idTom){
+                tom=curr;
+            }
+            else if(curr.getId()==idJane){
+                jane=curr;
+            }
+            else if(curr.getId()==idTIm){
+                tim=curr;
+            }
+            else{
+                throw new RuntimeException("unexpected contact ID");
+            }
+        }
+
+        assertNotNull(tom);
+        assertNotNull(jane);
+        assertNotNull(tim);
+
+        assertEquals("Tom", tom.getName());
+        assertEquals("Jane", jane.getName());
+        assertEquals("Tim", tim.getName());
 
     }
+
 
     @Test
     public void getContactsNormal(){
