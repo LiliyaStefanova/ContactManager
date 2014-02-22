@@ -14,25 +14,21 @@ import java.util.*;
 
 public class ContactManagerTest {
     private ContactManager contactManager;
-    private Set<Contact> contacts, emptyContacts;
+    private Set<Contact> contacts;
     private Calendar pastDate;
     private Calendar futureDate;
+    private Calendar futureDate2;
 
 
     @Before
     public void buildUp(){
         contactManager =new ContactManagerImpl();
-        contacts=new HashSet<Contact>();
-        Contact contact1=new ContactImpl(123, "Steve", "accountant");
-        Contact contact2=new ContactImpl(124, "Jane", "Public relations");
-        contacts.add(contact1);
-        contacts.add(contact2);
-      //  emptyContacts.add(new ContactImpl(0, null, null));
         pastDate=Calendar.getInstance();
         pastDate.set(2013, Calendar.DECEMBER, 7);
         futureDate=Calendar.getInstance();
         futureDate.set(2014, Calendar.MARCH, 30);
-
+        futureDate2=Calendar.getInstance();
+        futureDate2.set(2014, Calendar.APRIL, 30);
 
     }
 
@@ -41,27 +37,33 @@ public class ContactManagerTest {
     @Test
     public void addFutureMeetingNormalTest(){
 
+        int idSteve=contactManager.addNewContact("Steve", "accountant");
+        int idJane=contactManager.addNewContact("Jane", "Public relations");
+        contacts=contactManager.getContacts(idSteve, idJane);
         int meetingID= contactManager.addFutureMeeting(contacts, futureDate);
 
         FutureMeeting meeting= contactManager.getFutureMeeting(meetingID);
 
         assertNotNull(meeting);
-
-
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void addFutureMeetingInThePastTest(){
+
         contactManager.addFutureMeeting(contacts, pastDate);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void addFutureMeetingNonExistentContactTest(){
-        contactManager.addFutureMeeting(contacts, futureDate);
+        Contact c=new ContactImpl(1234, "Jim", "non-existent");
+        Set<Contact> nonExistentContact=new HashSet<Contact>();
+        nonExistentContact.add(c);
+        contactManager.addFutureMeeting(nonExistentContact, futureDate);
 
     }
 
     @Test
+    //difficult to test without return
     public void getPastMeetingNormalTest(){
         String notes="notes";
         contactManager.addNewPastMeeting(contacts,pastDate,notes );
@@ -70,13 +72,17 @@ public class ContactManagerTest {
     }
 
     @Test
+    //difficult to test without return
     public void getPastMeetingInFutureTest(){
-
+        String notes="notes";
+        contactManager.addNewPastMeeting(contacts,futureDate,notes );
     }
 
     @Test
     public void getFutureMeetingNormalTest(){
-
+        int idSteve=contactManager.addNewContact("Steve", "accountant");
+        int idJane=contactManager.addNewContact("Jane", "Public relations");
+        contacts=contactManager.getContacts(idSteve, idJane);
         int id=contactManager.addFutureMeeting(contacts, futureDate);
 
         assertEquals(contactManager.getFutureMeeting(id).getId(), id);
@@ -85,11 +91,19 @@ public class ContactManagerTest {
 
     @Test
     public void getFutureMeetingInPastTest(){
+        //difficult to test without new past meeting returning id
 
     }
 
     @Test
     public void getMeetingExistingTest(){
+        int idSteve=contactManager.addNewContact("Steve", "accountant");
+        int idJane=contactManager.addNewContact("Jane", "Public relations");
+        contacts=contactManager.getContacts(idSteve, idJane);
+        int idFuture=contactManager.addFutureMeeting(contacts, futureDate);
+
+        assertNotNull(contactManager.getMeeting(idFuture));
+        assertEquals(idFuture, contactManager.getMeeting(idFuture).getId());
 
     }
 
@@ -100,56 +114,70 @@ public class ContactManagerTest {
 
     @Test
     public void getFutureMeetingListPerContactNormalTest(){
+        Contact c=null;
+        int idSteve=contactManager.addNewContact("Steve", "accountant");
+        int idJane=contactManager.addNewContact("Jane", "Public relations");
+        contacts=contactManager.getContacts(idSteve, idJane);
+        int idFuture1=contactManager.addFutureMeeting(contacts, futureDate);
+        int idFuture2=contactManager.addFutureMeeting(contacts, futureDate2);
 
-    }
-
-    @Test
-    public void getFutureMeetingListPerContactEmptyListTest(){
+        Set<Contact> contactSteve=contactManager.getContacts(idSteve);
+        for(Contact curr:contactSteve){
+            c=curr;
+        }
+        List<Meeting> meetingsSteve=contactManager.getFutureMeetingList(c);
+        assertEquals(2, meetingsSteve.size());
+        Meeting prev = null;
+        for(Meeting curr:meetingsSteve){
+            if (prev != null) {
+                    assertTrue(curr.getDate().compareTo(prev.getDate())>0)     ;
+            }
+            prev =curr;
+        }
 
     }
 
     @Test(expected=IllegalArgumentException.class)
     public void getFutureMeetingListPerContactNonExistingContactTest(){
+        Contact c=new ContactImpl(1234, "Fred","tax");
+        List<Meeting> meetingsSteve=contactManager.getFutureMeetingList(c);
 
     }
 
     @Test
     public void getFutureMeetingListPerContactNoDuplicatesTest(){
+        Contact c=null;
+        int idSteve=contactManager.addNewContact("Steve", "accountant");
+        int idJane=contactManager.addNewContact("Jane", "Public relations");
+        contacts=contactManager.getContacts(idSteve, idJane);
+        int idFuture1=contactManager.addFutureMeeting(contacts, futureDate);
+        int idFuture2=contactManager.addFutureMeeting(contacts, futureDate);
+
+        Set<Contact> contactSteve=contactManager.getContacts(idSteve);
+        for(Contact curr:contactSteve){
+            c=curr;
+        }
+        List<Meeting> meetingsSteve=contactManager.getFutureMeetingList(c);
+        assertEquals(1, meetingsSteve.size());
 
     }
 
     @Test
-    public void getFutureMeetingListPerContactSortedTest(){
+    public void getFutureMeetingsPerDateTest(){
+        int idSteve=contactManager.addNewContact("Steve", "accountant");
+        int idJane=contactManager.addNewContact("Jane", "Public relations");
+        int idTim=contactManager.addNewContact("Tim", "Public relations");
+        contacts=contactManager.getContacts(idSteve, idJane);
+        Set<Contact> contacts1=contactManager.getContacts(idSteve, idTim);
+        int idFuture=contactManager.addFutureMeeting(contacts, futureDate);
+        int idFuture3=contactManager.addFutureMeeting(contacts, futureDate);
+        int idFuture2=contactManager.addFutureMeeting(contacts1, futureDate);
 
-    }
-
-    @Test
-    public void getFutureMeetingsPerDateNormalTest(){
-
-    }
-
-    @Test
-    public void getFutureMeetingsPerDateEmptyTest(){
-
-    }
-
-    @Test
-    public void getFutureMeetingsPerDateDuplicatesTest(){
-
-    }
-
-    @Test
-    public void getFutureMeetingsPerDateSortedTest(){
-
+        assertEquals(3, contactManager.getFutureMeetingList(futureDate).size());
     }
 
     @Test
     public void getPastMeetingsPerContactNormalTest(){
-
-    }
-
-    @Test
-    public void getPastMeetingsPerContactEmptyTest(){
 
     }
 
