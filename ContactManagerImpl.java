@@ -1,6 +1,4 @@
-import java.util.Calendar;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -10,14 +8,54 @@ import java.util.Set;
  * To change this template use File | Settings | File Templates.
  */
 public class ContactManagerImpl implements ContactManager {
+
+    private Set<Contact> allContacts;
+    private List<Meeting> allMeetings;
+    private Map<Contact, Meeting> meetingsPerContact;
+    private Map<Meeting, Contact> contactMeetings;
+
+    public ContactManagerImpl(){
+
+        allContacts=new HashSet<Contact>();
+        allMeetings=new ArrayList<Meeting>();
+        meetingsPerContact=new HashMap<Contact, Meeting>();
+        contactMeetings=new HashMap<Meeting, Contact>();
+    }
+
     @Override
     public int addFutureMeeting(Set<Contact> contacts, Calendar date) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        //need to add a check here to ensure the id does not exist alread
+        Calendar now=Calendar.getInstance();
+        //check this is right
+        if(date.getTime().compareTo(now.getTime())<0){
+            throw new IllegalArgumentException("Date specified in the past");
+        }
+        else{
+            for(Contact curr:contacts){
+                if(!allContacts.contains(curr)){
+                    throw  new IllegalArgumentException("Contact "+ curr.getName()+ " does not exist");
+                }
+            }
+        }
+        int id=generateMeetingID();
+        Meeting newFutureMeeting=new FutureMeetingImpl(id,date, contacts);
+        allMeetings.add(newFutureMeeting);
+        return newFutureMeeting.getId();
     }
 
     @Override
     public PastMeeting getPastMeeting(int id) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        PastMeeting result=null;
+        if(allMeetings.get(id)==null){
+            return null;
+        }
+       else if(allMeetings.get(id) instanceof PastMeeting){
+            result=(PastMeeting) allMeetings.get(id);
+        }
+        else if(allMeetings.get(id) instanceof FutureMeeting){
+            throw new IllegalArgumentException("This meeting is happening in the future");
+        }
+        return result;
     }
 
     @Override
@@ -74,4 +112,19 @@ public class ContactManagerImpl implements ContactManager {
     public void flush() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
+
+    private int generateMeetingID(){
+
+        int meetingID=(int) Math.abs(Math.random()*Integer.MAX_VALUE);
+        return meetingID;
+    }
+
+    private int generateContactID(){
+
+        int contactID=(int) Math.abs(Math.random()*Integer.MAX_VALUE);
+        return contactID;
+
+    }
+
+
 }
