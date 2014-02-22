@@ -16,8 +16,10 @@ public class ContactManagerTest {
     private ContactManager contactManager;
     private Set<Contact> contacts;
     private Calendar pastDate;
+    private Calendar pastDate2;
     private Calendar futureDate;
     private Calendar futureDate2;
+    private Calendar today;
 
 
     @Before
@@ -29,6 +31,10 @@ public class ContactManagerTest {
         futureDate.set(2014, Calendar.MARCH, 30);
         futureDate2=Calendar.getInstance();
         futureDate2.set(2014, Calendar.APRIL, 30);
+        pastDate2=Calendar.getInstance();
+        pastDate2.set(2013, Calendar.DECEMBER, 15);
+        today=Calendar.getInstance();
+        today.set(2014, Calendar.FEBRUARY, 22);
 
     }
 
@@ -178,6 +184,21 @@ public class ContactManagerTest {
 
     @Test
     public void getPastMeetingsPerContactNormalTest(){
+        //need to implement the addNewPastMeeting first
+
+        Contact c=null;
+        int idSteve=contactManager.addNewContact("Steve", "accountant");
+        int idJane=contactManager.addNewContact("Jane", "Public relations");
+        contacts=contactManager.getContacts(idSteve, idJane);
+
+        contactManager.addNewPastMeeting(contacts,  pastDate, "notes");
+        contactManager.addNewPastMeeting(contacts,  pastDate2, "notes");
+
+        Set<Contact> contactSteve=contactManager.getContacts(idSteve);
+        for(Contact curr:contactSteve){
+            c=curr;
+        }
+        assertEquals(2, contactManager.getPastMeetingList(c).size());
 
     }
 
@@ -198,26 +219,44 @@ public class ContactManagerTest {
 
     @Test
     public void addNewPastMeetingNormalTest(){
+        //how can this be tested if it does not return ID
+        Contact c=null;
+        int idSteve=contactManager.addNewContact("Steve", "accountant");
+        int idJane=contactManager.addNewContact("Jane", "Public relations");
+        contacts=contactManager.getContacts(idSteve, idJane);
+        String notes="Organisational set up";
 
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void addNewPastMeetingEmptyContactListTest(){
-
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void addNewPastMeetingNonExistentContactTest(){
-
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void addNewPastMeetingNullArgumentTest(){
+        contactManager.addNewPastMeeting(contacts,pastDate,notes);
+        Set<Contact> contactSteve=contactManager.getContacts(idSteve);
+        for(Contact curr:contactSteve){
+            c=curr;
+        }
+        List<PastMeeting> testPastMeetingsList=contactManager.getPastMeetingList(c);
+        for(PastMeeting curr:testPastMeetingsList){
+            assertEquals("Organisational set up",curr.getNotes());
+            assertEquals(pastDate, curr.getDate());
+        }
 
     }
 
     @Test
     public void addMeetingNotesNormalTest(){
+        int idSteve=contactManager.addNewContact("Steve", "accountant");
+        int idJane=contactManager.addNewContact("Jane", "Public relations");
+        contacts=contactManager.getContacts(idSteve, idJane);
+        Contact c=null;
+        Set<Contact> contactSteve=contactManager.getContacts(idSteve);
+        for(Contact curr:contactSteve){
+            c=curr;
+        }
+        int id=contactManager.addFutureMeeting(contacts,today);
+        String text="test";
+        contactManager.addMeetingNotes(id, text);
+
+        List<PastMeeting> newPastMeeting=contactManager.getPastMeetingList(c);
+        for(PastMeeting curr:newPastMeeting){
+            assertEquals(text, curr.getNotes());
+        }
 
     }
 
@@ -348,11 +387,25 @@ public class ContactManagerTest {
 
     @Test
     public void getContactsNormal(){
+        int idTom=contactManager.addNewContact("Tom Jones", "sponsor");
+        int idJane=contactManager.addNewContact("Jane Smith", "sponsor");
+        int idTim=contactManager.addNewContact("Tim Jones", "sponsor");
+        contacts=contactManager.getContacts(idTom, idJane, idTim);
+
+        assertEquals(2,contactManager.getContacts("Jones").size());
 
     }
 
     @Test(expected = NullPointerException.class)
     public void getContactsNullParam(){
+
+        int idTom=contactManager.addNewContact("Tom Jones", "sponsor");
+        int idJane=contactManager.addNewContact("Jane Smith", "sponsor");
+        int idTim=contactManager.addNewContact("Tim Jones", "sponsor");
+        contacts=contactManager.getContacts(idTom, idJane, idTim);
+
+        String name=null;
+       contactManager.getContacts(name);
 
     }
 
