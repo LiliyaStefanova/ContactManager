@@ -96,8 +96,10 @@ public class ContactManagerImpl implements ContactManager, Serializable {
             throw new IllegalArgumentException("Contact does not exist in records");
         }
         List<Meeting> futureMeetingsPerContact = new ArrayList<Meeting>();
-        //all meetings for a contact will be put in a TreeSet to sort by date and remove duplicates
-        Set<Meeting> interim = new TreeSet<Meeting>(new Comparator<Meeting>() {
+        /*
+        All meetings for a contact will be put in a TreeSet to sort by date and remove duplicates
+         */
+        Set<Meeting> interimMeetingList = new TreeSet<Meeting>(new Comparator<Meeting>() {
             @Override
             public int compare(Meeting o1, Meeting o2) {
                 return o1.getDate().compareTo(o2.getDate());
@@ -108,12 +110,12 @@ public class ContactManagerImpl implements ContactManager, Serializable {
             //only add future meetings to the list
             if (curr instanceof FutureMeeting) {
                 if (curr.getContacts().contains(contact)) {
-                    interim.add(curr);
+                    interimMeetingList.add(curr);
                 }
             }
         }
         //converting the tree to list
-        for (Meeting curr : interim) {
+        for (Meeting curr : interimMeetingList) {
             if (curr != null) {
                 futureMeetingsPerContact.add(curr);
             }
@@ -129,7 +131,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         Set<Meeting> interim = new TreeSet<Meeting>(new Comparator<Meeting>() {
             @Override
             public int compare(Meeting o1, Meeting o2) {
-                //compares items by date to check they are the same
+                //compares items by date and time
                 int compCode = o1.getDate().compareTo(o2.getDate());
                 if (compCode == 0) {
                     //if so, it checks the ids to confirm if they are duplicates on the same day
@@ -143,7 +145,10 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         for (Meeting curr : allMeetings) {
             //only add future meetings to the list
             if (curr instanceof FutureMeeting) {
-                if (curr.getDate().equals(date)) {
+                    //populate list with all meetings on the same date, but disregard time
+                if (curr.getDate().get(Calendar.YEAR)==date.get(Calendar.YEAR)&&curr.getDate().
+                        get(Calendar.DAY_OF_MONTH)==date.get(Calendar.DAY_OF_MONTH)&&curr.getDate().
+                        get(Calendar.MONTH)==date.get(Calendar.MONTH)) {
                     interim.add(curr);
                 }
             }
@@ -196,12 +201,12 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         //check this is right
         if (date.getTime().compareTo(now.getTime()) > 0) {
             throw new IllegalArgumentException("Date specified in the future");
-        } else if (date == null || text == null || contacts == null) {
+            //not checking date as Calendar type object indicates it cannot be null
+        } else if (text == null||contacts==null) {
             throw new IllegalArgumentException("One of the parameters is missing");
         } else if (contacts.isEmpty()) {
             throw new IllegalArgumentException("The list of contacts is empty");
-
-        } else {
+        }else {
             for (Contact curr : contacts) {
                 if (!allContacts.contains(curr)) {
                     throw new IllegalArgumentException("Contact " + curr.getName() + " does not exist");
