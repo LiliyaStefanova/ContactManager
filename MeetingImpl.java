@@ -1,3 +1,4 @@
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
@@ -9,16 +10,21 @@ import java.util.Set;
  * Time: 15:02
  * To change this template use File | Settings | File Templates.
  */
-public class MeetingImpl implements Meeting {
+public class MeetingImpl implements Meeting,Serializable {
 
     private int meetingID;
     private Calendar scheduledDate;
     private Set<Contact> meetingAttendees;
 
+    public int getMeetingID() {
+        return meetingID;
+    }
+
+    public MeetingImpl(){}
+
     public MeetingImpl(int id, Calendar date, Set<Contact> attendees){
         this.meetingID=id;
         this.scheduledDate=date;
-        meetingAttendees=new HashSet<Contact>();
         this.meetingAttendees=attendees;
     }
 
@@ -61,5 +67,26 @@ public class MeetingImpl implements Meeting {
 
         return this.meetingAttendees;
     }
+
+    public void setMeetingID(int meetingID) {
+        this.meetingID = meetingID;
+    }
+
+    public Calendar getScheduledDate() {
+        return scheduledDate;
+    }
+
+    public void setScheduledDate(Calendar scheduledDate) {
+        this.scheduledDate = scheduledDate;
+    }
+
+    public Set<Contact> getMeetingAttendees() {
+        return meetingAttendees;
+    }
+
+    public void setMeetingAttendees(Set<Contact> meetingAttendees) {
+        this.meetingAttendees = meetingAttendees;
+    }
+
 
 }
