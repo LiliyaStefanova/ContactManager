@@ -1,3 +1,4 @@
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Set;
 
@@ -8,7 +9,9 @@ import java.util.Set;
  * Time: 15:24
  * To change this template use File | Settings | File Templates.
  */
-public class FutureMeetingImpl extends MeetingImpl implements FutureMeeting {
+public class FutureMeetingImpl extends MeetingImpl implements FutureMeeting, Serializable {
+
+    public FutureMeetingImpl(){}
 
     public FutureMeetingImpl(int id, Calendar date, Set<Contact> attendees){
         //using super constructor of MeetingImpl
