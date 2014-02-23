@@ -30,12 +30,18 @@ public class MeetingTest {
         testMeeting=new MeetingImpl(4567,meetingDate, testContact);
     }
 
+    /**
+     * Tests meeting ID is returned correctly
+     */
     @Test
     public void getMeetingIdTest(){
 
         assertTrue(testMeeting.getId()==4567);
     }
 
+    /**
+     * Tests meeting date is returned correctly
+     */
     @Test
     public void getMeetingDateTest(){
         Calendar expectedDate=Calendar.getInstance();
@@ -44,6 +50,9 @@ public class MeetingTest {
 
     }
 
+    /**
+     * Tests the list of contact that attended the meeting is returned correctly
+     */
     @Test
     public void getMeetingContactsTest(){
         Set<Contact> expectedContacts=new HashSet<Contact>();
