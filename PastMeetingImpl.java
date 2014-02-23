@@ -1,3 +1,4 @@
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Set;
 
@@ -8,9 +9,11 @@ import java.util.Set;
  * Time: 15:19
  * To change this template use File | Settings | File Templates.
  */
-public class PastMeetingImpl extends MeetingImpl implements PastMeeting {
+public class PastMeetingImpl extends MeetingImpl implements PastMeeting, Serializable {
 
     private String meetingNotes;
+
+    public PastMeetingImpl(){}
 
     public PastMeetingImpl(int id, Calendar date, Set<Contact> attendees, String text){
         //using the MeetingImpl constructor
@@ -20,7 +23,16 @@ public class PastMeetingImpl extends MeetingImpl implements PastMeeting {
         //check will be made as part the ContactManager addNewPastMeeting()
     }
 
+    public String getMeetingNotes() {
+        return meetingNotes;
+    }
+
+    public void setMeetingNotes(String meetingNotes) {
+        this.meetingNotes = meetingNotes;
+    }
+
     @Override
+
     public String getNotes() {
 
         return this.meetingNotes;
