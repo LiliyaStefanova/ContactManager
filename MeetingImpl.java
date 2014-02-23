@@ -3,13 +3,6 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Created with IntelliJ IDEA.
- * User: liliya
- * Date: 11/02/14
- * Time: 15:02
- * To change this template use File | Settings | File Templates.
- */
 public class MeetingImpl implements Meeting,Serializable {
 
     private int meetingID;
