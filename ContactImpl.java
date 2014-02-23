@@ -1,3 +1,5 @@
+import java.io.Serializable;
+
 /**
  * Created with IntelliJ IDEA.
  * User: liliya
@@ -5,11 +7,13 @@
  * Time: 15:01
  * To change this template use File | Settings | File Templates.
  */
-public class ContactImpl implements Contact {
+public class ContactImpl implements Contact, Serializable {
 
     private int contactID;
     private String contactName;
     private String contactNotes;
+
+    public ContactImpl(){}
 
     public ContactImpl(int id, String name, String notes){
         if(name==null){
@@ -29,7 +33,9 @@ public class ContactImpl implements Contact {
         return this.contactID;
     }
 
+
     @Override
+
     public String getName() {
 
         return this.contactName;
@@ -46,4 +52,29 @@ public class ContactImpl implements Contact {
         //refactoring needed here-overriding existing notes scenario
         this.contactNotes=note;
     }
+
+    public void setContactID(int contactID) {
+        this.contactID = contactID;
+    }
+
+    public int getContactID() {
+        return contactID;
+    }
+
+    public String getContactName() {
+        return contactName;
+    }
+
+    public String getContactNotes() {
+        return contactNotes;
+    }
+
+    public void setContactName(String contactName) {
+        this.contactName = contactName;
+    }
+
+    public void setContactNotes(String contactNotes) {
+        this.contactNotes = contactNotes;
+    }
+
 }
