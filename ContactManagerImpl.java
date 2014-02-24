@@ -21,6 +21,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     public int addFutureMeeting(Set<Contact> contacts, Calendar date) {
         int id = 0;
         Calendar now = Calendar.getInstance();
+        Meeting newFutureMeeting = null;
         //check date against current date to determine if in the past
         if (date.getTime().compareTo(now.getTime()) < 0) {
             throw new IllegalArgumentException("Date specified in the past");
@@ -31,14 +32,21 @@ public class ContactManagerImpl implements ContactManager, Serializable {
                 }
             }
         }
-        //keep generating new id's if this id already exists
+        //keep generating new id's if this random id already exists in the list
         do {
             id = generateRandomMeetingID();
         }
-        while (meetingExists(id));
-
-        Meeting newFutureMeeting = new FutureMeetingImpl(id, date, contacts);
-        allMeetings.add(newFutureMeeting);
+        while (meetingIdExists(id));
+        /**
+         * Only add the meeting if it does not exist already
+         * A meeting is considered a duplicate if it has the same contact list and same date/time
+         */
+        if (!meetingExists(contacts, date)) {
+            newFutureMeeting = new FutureMeetingImpl(id, date, contacts);
+            allMeetings.add(newFutureMeeting);
+        } else {
+            throw new IllegalArgumentException("Meeting already exists");
+        }
         return newFutureMeeting.getId();
     }
 
@@ -145,10 +153,10 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         for (Meeting curr : allMeetings) {
             //only add future meetings to the list
             if (curr instanceof FutureMeeting) {
-                    //populate list with all meetings on the same date, but disregard time
-                if (curr.getDate().get(Calendar.YEAR)==date.get(Calendar.YEAR)&&curr.getDate().
-                        get(Calendar.DAY_OF_MONTH)==date.get(Calendar.DAY_OF_MONTH)&&curr.getDate().
-                        get(Calendar.MONTH)==date.get(Calendar.MONTH)) {
+                //populate list with all meetings on the same date, but disregard time
+                if (curr.getDate().get(Calendar.YEAR) == date.get(Calendar.YEAR) && curr.getDate().
+                        get(Calendar.DAY_OF_MONTH) == date.get(Calendar.DAY_OF_MONTH) && curr.getDate().
+                        get(Calendar.MONTH) == date.get(Calendar.MONTH)) {
                     interim.add(curr);
                 }
             }
@@ -196,36 +204,47 @@ public class ContactManagerImpl implements ContactManager, Serializable {
 
     @Override
     public void addNewPastMeeting(Set<Contact> contacts, Calendar date, String text) {
-        //need to add a check here to ensure the id does not exist already
+        int id = 0;
         Calendar now = Calendar.getInstance();
         //check this is right
         if (date.getTime().compareTo(now.getTime()) > 0) {
             throw new IllegalArgumentException("Date specified in the future");
             //not checking date as Calendar type object indicates it cannot be null
-        } else if (text == null||contacts==null) {
-            throw new IllegalArgumentException("One of the parameters is missing");
+        } else if (text == null || contacts == null) {
+            throw new NullPointerException("One of the parameters is missing");
         } else if (contacts.isEmpty()) {
             throw new IllegalArgumentException("The list of contacts is empty");
-        }else {
+        } else {
             for (Contact curr : contacts) {
                 if (!allContacts.contains(curr)) {
                     throw new IllegalArgumentException("Contact " + curr.getName() + " does not exist");
                 }
             }
         }
-        int id = generateRandomMeetingID();
-        Meeting newPastMeeting = new PastMeetingImpl(id, date, contacts, text);
-        allMeetings.add(newPastMeeting);
+        /**
+         * Check that the same id does not exist already-if yes, regenerate ID
+         */
+        do {
+            id = generateRandomMeetingID();
+        }
+        while (meetingIdExists(id));
 
+        Meeting newPastMeeting = new PastMeetingImpl(id, date, contacts, text);
+        if (!meetingExists(contacts, date)) {
+            allMeetings.add(newPastMeeting);
+        } else {
+            throw new IllegalArgumentException("Meeting already exists");
+        }
     }
 
     @Override
     public void addMeetingNotes(int id, String text) {
         Calendar now = Calendar.getInstance();
         Meeting convertedToPast = null;
+        Meeting updatedPast=null;
         if (text == null) {
             throw new NullPointerException("Notes are not specified");
-        } else if (!meetingExists(id)) {
+        } else if (!meetingIdExists(id)) {
             throw new IllegalArgumentException("Meeting does not exist");
         }
         for (Meeting curr : allMeetings) {
@@ -233,22 +252,35 @@ public class ContactManagerImpl implements ContactManager, Serializable {
                 if (curr.getDate().getTime().compareTo(now.getTime()) > 0) {
                     throw new IllegalStateException("Meeting is set for date in the future");
                 }
-                convertedToPast = new PastMeetingImpl(curr.getId(), curr.getDate(), curr.getContacts(), text);
-                allMeetings.remove(curr);
-                allMeetings.add(convertedToPast);
+                else if(curr instanceof PastMeeting){
+                    //replace existing past meeting with a new identical past meeting with the new notes
+                    updatedPast=new PastMeetingImpl(curr.getId(), curr.getDate(), curr.getContacts(), text);
+                    allMeetings.add(convertedToPast);
+                    allMeetings.remove(curr);
+                }
+                else if(curr instanceof FutureMeeting){
+                    //replace existing future meeting with an identical past meeting, remove future meeting
+                    convertedToPast = new PastMeetingImpl(curr.getId(), curr.getDate(), curr.getContacts(), text);
+                    allMeetings.remove(curr);
+                    allMeetings.add(convertedToPast);
+                 }
             }
-
         }
     }
 
+    /**
+     * The interface of this method has been amended to return the contact ID
+     */
     @Override
-    //changed interface to return int, to allow for testing to be performed
     public int addNewContact(String name, String notes) {
+        int id = 0;
+        do {
+            id = generateContactID();
+        } while (contactIdExists(id));
 
-        int id = generateContactID();
+        //contact deemed unique based on ID only, no checks on duplicate name and notes carried out
         Contact newContact = new ContactImpl(id, name, notes);
         allContacts.add(newContact);
-
         return newContact.getId();
     }
 
@@ -325,15 +357,37 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         return (int) Math.abs(Math.random() * Integer.MAX_VALUE);
     }
 
-    private boolean meetingExists(int id) {
+    private boolean meetingExists(Set<Contact> contacts, Calendar date) {
         boolean meetingExists = false;
         for (Meeting curr : allMeetings) {
-            if (curr.getId() == id) {
+            if (curr.getContacts().equals(contacts) && curr.getDate().equals(date)) {
                 meetingExists = true;
                 return meetingExists;
             }
         }
         return meetingExists;
+    }
+
+    private boolean meetingIdExists(int id) {
+        boolean idExists = false;
+        for (Meeting curr : allMeetings) {
+            if (curr.getId() == id) {
+                idExists = true;
+                return idExists;
+            }
+        }
+        return idExists;
+    }
+
+    private boolean contactIdExists(int id) {
+        boolean idExists = false;
+        for (Contact curr : allContacts) {
+            if (curr.getId() == id) {
+                idExists = true;
+                return idExists;
+            }
+        }
+        return idExists;
     }
 
     @SuppressWarnings("supressed")
