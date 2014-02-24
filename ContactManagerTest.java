@@ -64,6 +64,16 @@ public class ContactManagerTest {
 
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void addDuplicateFutureMeetingTest(){
+
+        int idSteve=contactManager.addNewContact("Steve", "accountant");
+        int idJane=contactManager.addNewContact("Jane", "Public relations");
+        contacts=contactManager.getContacts(idSteve, idJane);
+        contactManager.addFutureMeeting(contacts, march302014);
+        contactManager.addFutureMeeting(contacts, march302014);
+   }
+
     @Test
     public void getPastMeetingNormalTest(){
         Contact contactObject=null;
@@ -369,32 +379,76 @@ public class ContactManagerTest {
 
     }
 
+    @Test(expected=IllegalArgumentException.class)
+    public void addNewPastMeetingDuplicate(){
+
+        int idSteve=contactManager.addNewContact("Steve", "accountant");
+        int idJane=contactManager.addNewContact("Jane", "Public relations");
+        contacts=contactManager.getContacts(idSteve, idJane);
+        contactManager.addNewPastMeeting(contacts, december152013, "test");
+        contactManager.addNewPastMeeting(contacts, december152013, "other test");
+
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void addNewPastMeetingEmptyNonExistentContactTest(){
+
+        Contact c=new ContactImpl(34567, "Constantine", "development");
+
+        Set<Contact> emptyContactList=new HashSet<Contact>();
+
+        Set<Contact> nonExistentContactList=new HashSet<Contact>();
+        nonExistentContactList.add(c);
+
+        contactManager.addNewPastMeeting(emptyContactList, march302014, "notes");
+        contactManager.addNewPastMeeting(nonExistentContactList, march302014, "notes");
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void addNewPastMeetingWithNullArgumentTest(){
+        int idSteve=contactManager.addNewContact("Steve", "accountant");
+        int idJane=contactManager.addNewContact("Jane", "Public relations");
+        contacts=contactManager.getContacts(idSteve, idJane);
+        String notes="Organisational set up";
+
+        contactManager.addNewPastMeeting(contacts, december72013,null);
+
+    }
+
     @Test
     public void addMeetingNotesNormalTest(){
         int idSteve=contactManager.addNewContact("Steve", "accountant");
         int idJane=contactManager.addNewContact("Jane", "Public relations");
         contacts=contactManager.getContacts(idSteve, idJane);
+        Calendar february222014=Calendar.getInstance();
+        february222014.setTimeInMillis(february222014.getTimeInMillis() + 1000);
+        int id=contactManager.addFutureMeeting(contacts, february222014);
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         Contact c=null;
         Set<Contact> contactSteve=contactManager.getContacts(idSteve);
+
         for(Contact curr:contactSteve){
             c=curr;
         }
-        int id=contactManager.addFutureMeeting(contacts,today);
         String text="test";
         contactManager.addMeetingNotes(id, text);
-
         List<PastMeeting> newPastMeeting=contactManager.getPastMeetingList(c);
         for(PastMeeting curr:newPastMeeting){
-            assertEquals(text, curr.getNotes());
-        }
 
+            assertEquals(text, curr.getNotes());
+            assertEquals(curr,contactManager.getMeeting(id));
+        }
     }
 
     @Test(expected=IllegalArgumentException.class)
     public void addMeetingNotesNonExistentMeetingTest(){
-
         contactManager.addMeetingNotes(1234, "test");
-
     }
 
     @Test(expected=IllegalStateException.class)
@@ -422,9 +476,28 @@ public class ContactManagerTest {
 
     }
 
-    //may need another test case here for overriding notes functionality
+    @Test
+    public void addMeetingNotesToExistingPastMeetingTest(){
+        Contact contactSteve=null;
+        int idSteve=contactManager.addNewContact("Steve", "accountant");
+        contacts=contactManager.getContacts(idSteve);
 
+        for(Contact c:contacts){
+            contactSteve=c;
+        }
 
+        contactManager.addNewPastMeeting(contacts, december152013, " ");
+        PastMeeting stevePastMeeting=null;
+
+        for(PastMeeting curr:contactManager.getPastMeetingList(contactSteve))
+        {
+        contactManager.addMeetingNotes(curr.getId(), "test notes");
+        }
+        for(PastMeeting curr:contactManager.getPastMeetingList(contactSteve)){
+            assertEquals("test notes", curr.getNotes());
+        }
+
+    }
   //End Meeting test cases
 
   //Begin Contact test cases
@@ -455,13 +528,19 @@ public class ContactManagerTest {
 
     @Test
     public void getContactsNormalTest(){
+
         int idTom=contactManager.addNewContact("Tom", "sponsor");
         int idJane=contactManager.addNewContact("Jane", "sponsor");
-        int idTIm=contactManager.addNewContact("Tim", "sponsor");
-        int id=1234;
+        int idTim=contactManager.addNewContact("Tim", "sponsor");
 
-        Set<Contact> testContacts=contactManager.getContacts(idTom, idJane, idTIm);
+
+        Set<Contact> testContacts=contactManager.getContacts(idTom, idJane, idTim);
+
+        //check the size of the returned set matches the number of contacts expected
+
         assertEquals(3, testContacts.size());
+
+       //checks the contacts in the match the one expected
 
         Contact tom=null;
         Contact jane=null;
@@ -474,7 +553,7 @@ public class ContactManagerTest {
             else if(curr.getId()==idJane){
                 jane=curr;
             }
-            else if(curr.getId()==idTIm){
+            else if(curr.getId()==idTim){
                 tim=curr;
             }
             else{
@@ -539,6 +618,26 @@ public class ContactManagerTest {
 
         assertEquals(2,contactManager.getContacts("Jones").size());
 
+        Contact tom=null;
+        Contact tim=null;
+
+        Set<Contact> contactContainingName=contactManager.getContacts("Jones");
+
+        for(Contact curr:contactContainingName){
+            if(curr.getId()==idTom){
+                tom=curr;
+            }
+            else if(curr.getId()==idTim){
+                tim=curr;
+            }
+            else{
+                throw new RuntimeException("unexpected contact");
+            }
+        }
+
+        assertEquals("Tom Jones", tom.getName());
+        assertEquals("Tim Jones", tim.getName());
+
     }
     @Test(expected = NullPointerException.class)
     public void getContactsNullParam(){
@@ -554,6 +653,7 @@ public class ContactManagerTest {
     }
 
   //End Contact related test cases
+
 
   //Begin I/O related test cases
 
