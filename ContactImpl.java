@@ -33,7 +33,6 @@ public class ContactImpl implements Contact, Serializable {
         return this.contactID;
     }
 
-
     @Override
 
     public String getName() {
@@ -49,10 +48,10 @@ public class ContactImpl implements Contact, Serializable {
 
     @Override
     public void addNotes(String note) {
-        //refactoring needed here-overriding existing notes scenario
         this.contactNotes=note;
     }
 
+    //getters and setters
     public void setContactID(int contactID) {
         this.contactID = contactID;
     }
