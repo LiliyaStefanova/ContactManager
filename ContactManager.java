@@ -124,7 +124,7 @@ public interface ContactManager {
      * @throws NullPointerException if the name or the notes are null
      */
     //changed signature of this method to allow for testing; check if acceptable
-    int addNewContact(String name, String notes);
+    void addNewContact(String name, String notes);
 
     /**
      * Returns a list containing the contacts that correspond to the IDs.
