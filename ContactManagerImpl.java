@@ -17,21 +17,18 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     public ContactManagerImpl() {
         allContacts = new HashSet<Contact>();
         allMeetings = new ArrayList<Meeting>();
-        //create a new file and use the structure to check if the file exists before deserializing
-        File f=new File(FILENAME);
-        if(f.exists()){
-            ContactManager cm = null;
-            XMLDecoder d = null;
+        File f = new File(FILENAME);
+        if (f.exists()&&f.length()>0) {
+            decodeFile();
+        }
+        else if(f.exists()&&f.length()>0){
 
+        }
+        else if(!f.exists()){
             try {
-                d = new XMLDecoder(new BufferedInputStream(new FileInputStream(FILENAME)));
-                cm = (ContactManager) d.readObject();
-            } catch (FileNotFoundException ex) {
+                f.createNewFile();
+            } catch (IOException ex) {
                 ex.printStackTrace();
-            } finally {
-                if (d != null) {
-                    d.close();
-                }
             }
         }
     }
@@ -334,31 +331,21 @@ public class ContactManagerImpl implements ContactManager, Serializable {
 
     @Override
     public void flush() {
-        XMLEncoder encodeMeetings = null;
-        XMLEncoder encodeContacts=null;
         File contactManager=new File(FILENAME);
-        if(!contactManager.exists()){
+        if(contactManager.exists()){
+            encodeFile();
+        }
+        else{
             try{
             contactManager.createNewFile();
+            encodeFile();
             }
             catch(IOException ex){
                 ex.printStackTrace();
             }
-            try {
-                encodeMeetings = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(FILENAME)));
-                encodeContacts = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(FILENAME)));
-                encodeMeetings.writeObject(allMeetings);
-                encodeMeetings.writeObject(allContacts);
-            } catch (FileNotFoundException ex) {
-                System.err.println(ex);
-            } finally {
-                if (encodeMeetings != null) {
-                    encodeMeetings.close();
-                }
-                if(encodeContacts!=null){
-                    encodeContacts.close();
-                }
-            }
+        }
+        for(Contact c:allContacts){
+            System.out.println(c.getName());
         }
     }
 
@@ -422,36 +409,40 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         }
         return idExists;
     }
-/*
-    @SuppressWarnings("supressed")
-    public static ContactManager deserializer() {
-        //create a new file and use the structure to check if the file exists before deserializing
-        File f=new File(FILENAME);
-        if(f.exists()){
-        ContactManager cm = null;
-        XMLDecoder d = null;
+    @SuppressWarnings("unchecked")
+    public void decodeFile() {
+        XMLDecoder decode=null;
+        try{
+            decode=new XMLDecoder(new BufferedInputStream(new FileInputStream(FILENAME)));
 
-        try {
-            d = new XMLDecoder(new BufferedInputStream(new FileInputStream(FILENAME)));
-            cm = (ContactManager) d.readObject();
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        } finally {
-            if (d != null) {
-                d.close();
-            }
         }
-        return cm;
+        catch(FileNotFoundException ex){
+            ex.printStackTrace();
+        }
+        allMeetings=(List<Meeting>) decode.readObject();
+        allContacts=(Set<Contact>) decode.readObject();
 
-    }*/
+        decode.close();
 
+    }
+
+    public void encodeFile() {
+        XMLEncoder encode = null;
+        try {
+            encode = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(FILENAME)));
+            encode.writeObject(allMeetings);
+            encode.writeObject(allContacts);
+        } catch (FileNotFoundException ex) {
+            System.err.println(ex);
+        } finally {
+            if (encode != null) {
+                encode.close();
+                }
+        }
+    }
     public static void main(String[] args) {
 
         ContactManager cm =new ContactManagerImpl();
-
-
-
-        cm.flush();
 
     }
 }
