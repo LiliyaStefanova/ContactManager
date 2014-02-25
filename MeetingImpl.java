@@ -21,6 +21,7 @@ public class MeetingImpl implements Meeting,Serializable {
         this.meetingAttendees=attendees;
     }
 
+    //equals and hashcode methods added for the purposes of implementing a tree set structure
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -48,6 +49,8 @@ public class MeetingImpl implements Meeting,Serializable {
 
         return this.meetingID;
     }
+
+    //getters and setters as part of Serializable implementation(required for XML encoding)
 
     @Override
     public Calendar getDate() {
