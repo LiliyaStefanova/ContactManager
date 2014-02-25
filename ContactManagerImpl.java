@@ -21,8 +21,8 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         if (f.exists()&&f.length()>0) {
             decodeFile();
         }
-        else if(f.exists()&&f.length()>0){
-
+        else if(f.exists()&&f.length()==0){
+               //do nothing if file exists but is empty
         }
         else if(!f.exists()){
             try {
@@ -268,7 +268,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
                 }
                 else if(curr instanceof PastMeeting){
                     //replace existing past meeting with a new identical past meeting with the new notes
-                    updatedPast=new PastMeetingImpl(curr.getId(), curr.getDate(), curr.getContacts(), text);
+                    updatedPast=new PastMeetingImpl(curr.getId(), curr.getDate(), curr.getContacts(), ((PastMeeting) curr).getNotes()+" "+text);
                     allMeetings.add(convertedToPast);
                     allMeetings.remove(curr);
                 }
@@ -332,22 +332,8 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     @Override
     public void flush() {
         File contactManager=new File(FILENAME);
-        if(contactManager.exists()){
             encodeFile();
         }
-        else{
-            try{
-            contactManager.createNewFile();
-            encodeFile();
-            }
-            catch(IOException ex){
-                ex.printStackTrace();
-            }
-        }
-        for(Contact c:allContacts){
-            System.out.println(c.getName());
-        }
-    }
 
     public Set<Contact> getAllContacts() {
         return allContacts;
