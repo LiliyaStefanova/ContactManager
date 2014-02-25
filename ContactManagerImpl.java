@@ -5,8 +5,7 @@ import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
 //need to write java doc comments for all the classes and generate
-//need to sort out the IO functions to create a new file
-//notes to a past meeting need to be appended and not overwritten
+//need to refactor the checkID exists function to make it common and re-usable
 
 public class ContactManagerImpl implements ContactManager, Serializable {
 
@@ -17,14 +16,13 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     public ContactManagerImpl() {
         allContacts = new HashSet<Contact>();
         allMeetings = new ArrayList<Meeting>();
+        //file is loaded when the program starts, i.e. when a new Contact manager object is created
         File f = new File(FILENAME);
-        if (f.exists()&&f.length()>0) {
+        if (f.exists() && f.length() > 0) {
             decodeFile();
-        }
-        else if(f.exists()&&f.length()==0){
-               //do nothing if file exists but is empty
-        }
-        else if(!f.exists()){
+        } else if (f.exists() && f.length() == 0) {
+            //do nothing if file exists but is empty
+        } else if (!f.exists()) {
             try {
                 f.createNewFile();
             } catch (IOException ex) {
@@ -50,7 +48,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         }
         //keep generating new id's if this random id already exists in the list
         do {
-            id = generateRandomMeetingID();
+            id = generateRandomID();
         }
         while (meetingIdExists(id));
         /**
@@ -167,7 +165,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         for (Meeting curr : allMeetings) {
             //only add future meetings to the list
             if (curr instanceof FutureMeeting) {
-                //populate list with all meetings on the same date, but disregard time
+                //populate list with all meetings on the same date, disregard time to avoid filtering out as duplicates
                 if (curr.getDate().get(Calendar.YEAR) == date.get(Calendar.YEAR) && curr.getDate().
                         get(Calendar.DAY_OF_MONTH) == date.get(Calendar.DAY_OF_MONTH) && curr.getDate().
                         get(Calendar.MONTH) == date.get(Calendar.MONTH)) {
@@ -199,7 +197,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         });
 
         for (Meeting curr : allMeetings) {
-            //only add future meetings to the list
+            //only add past meetings to the list
             if (curr instanceof PastMeeting) {
                 if (curr.getContacts().contains(contact)) {
                     interim.add((PastMeeting) curr);
@@ -220,7 +218,6 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     public void addNewPastMeeting(Set<Contact> contacts, Calendar date, String text) {
         int id = 0;
         Calendar now = Calendar.getInstance();
-        //check this is right
         if (date.getTime().compareTo(now.getTime()) > 0) {
             throw new IllegalArgumentException("Date specified in the future");
             //not checking date as Calendar type object indicates it cannot be null
@@ -231,7 +228,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         } else {
             for (Contact curr : contacts) {
                 if (!allContacts.contains(curr)) {
-                    throw new IllegalArgumentException("Contact " + curr.getName() + " does not exist");
+                    throw new IllegalArgumentException("Contact " + curr.getName() + " does not exist in records");
                 }
             }
         }
@@ -239,11 +236,13 @@ public class ContactManagerImpl implements ContactManager, Serializable {
          * Check that the same id does not exist already-if yes, regenerate ID
          */
         do {
-            id = generateRandomMeetingID();
+            id = generateRandomID();
         }
         while (meetingIdExists(id));
 
         Meeting newPastMeeting = new PastMeetingImpl(id, date, contacts, text);
+        //check if the meeting is not a duplicate
+        //a meeting is considered duplicate if it has the same contacts and date/time as an existing meeting
         if (!meetingExists(contacts, date)) {
             allMeetings.add(newPastMeeting);
         } else {
@@ -255,7 +254,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     public void addMeetingNotes(int id, String text) {
         Calendar now = Calendar.getInstance();
         Meeting convertedToPast = null;
-        Meeting updatedPast=null;
+        Meeting updatedPast = null;
         if (text == null) {
             throw new NullPointerException("Notes are not specified");
         } else if (!meetingIdExists(id)) {
@@ -264,35 +263,30 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         for (Meeting curr : allMeetings) {
             if (curr.getId() == id) {
                 if (curr.getDate().getTime().compareTo(now.getTime()) > 0) {
-                    throw new IllegalStateException("Meeting is set for date in the future");
-                }
-                else if(curr instanceof PastMeeting){
-                    //replace existing past meeting with a new identical past meeting with the new notes
-                    updatedPast=new PastMeetingImpl(curr.getId(), curr.getDate(), curr.getContacts(), ((PastMeeting) curr).getNotes()+" "+text);
-                    allMeetings.add(convertedToPast);
+                    throw new IllegalStateException("Meeting is set for a date in the future");
+                } else if (curr instanceof PastMeeting) {
+                    //replace existing past meeting with a new identical past meeting with an addition to the notes
+                    updatedPast = new PastMeetingImpl(curr.getId(), curr.getDate(), curr.getContacts(), ((PastMeeting) curr).getNotes());
+                    allMeetings.add(updatedPast);
                     allMeetings.remove(curr);
-                }
-                else if(curr instanceof FutureMeeting){
-                    //replace existing future meeting with an identical past meeting, remove future meeting
+                } else if (curr instanceof FutureMeeting) {
+                    //replace existing future meeting with an identical past meeting, remove future meeting from records
                     convertedToPast = new PastMeetingImpl(curr.getId(), curr.getDate(), curr.getContacts(), text);
                     allMeetings.remove(curr);
                     allMeetings.add(convertedToPast);
-                 }
+                }
             }
         }
     }
 
-    /**
-     * The interface of this method has been amended to return the contact ID
-     */
     @Override
     public void addNewContact(String name, String notes) {
         int id = 0;
         do {
-            id = generateContactID();
+            id = generateRandomID();
         } while (contactIdExists(id));
 
-        //contact deemed unique based on ID only, no checks on duplicate name and notes carried out
+        //contact deemed unique based on ID only, as duplicate name and/or notes are possible
         Contact newContact = new ContactImpl(id, name, notes);
         allContacts.add(newContact);
     }
@@ -308,7 +302,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
             }
         }
         if (contacts.size() != ids.length) {
-            throw new IllegalArgumentException("ID provided is a for a non-existent contact");
+            throw new IllegalArgumentException("ID(s) provided is for a non-existent contact");
         }
 
         return contacts;
@@ -328,13 +322,81 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         }
         return contactsContainingName;
     }
-
+    //writes the contents of the contact manager collections to a file
     @Override
     public void flush() {
-        File contactManager=new File(FILENAME);
-            encodeFile();
+        File contactManager = new File(FILENAME);
+        encodeFile();
+    }
+    //generates random integer values to be used as meeting or contact IDs
+    private int generateRandomID() {
+        return (int) Math.abs(Math.random() * Integer.MAX_VALUE);
+    }
+    //determines if a meeting to be added already exists
+    private boolean meetingExists(Set<Contact> contacts, Calendar date) {
+        boolean meetingExists = false;
+        for (Meeting curr : allMeetings) {
+            if (curr.getContacts().equals(contacts) && curr.getDate().equals(date)) {
+                meetingExists = true;
+                return meetingExists;
+            }
         }
+        return meetingExists;
+    }
+    //determines if a meeting ID already exists and needs to be regenerated
+    private boolean meetingIdExists(int id) {
+        boolean idExists = false;
+        for (Meeting curr : allMeetings) {
+            if (curr.getId() == id) {
+                idExists = true;
+                return idExists;
+            }
+        }
+        return idExists;
+    }
+    //determines if a contact ID already exists and needs to be regenerated
+    private boolean contactIdExists(int id) {
+        boolean idExists = false;
+        for (Contact curr : allContacts) {
+            if (curr.getId() == id) {
+                idExists = true;
+                return idExists;
+            }
+        }
+        return idExists;
+    }
+    //decoding the xml file back into the meetings and contacts objects
+    @SuppressWarnings("unchecked")
+    public void decodeFile() {
+        XMLDecoder decode = null;
+        try {
+            decode = new XMLDecoder(new BufferedInputStream(new FileInputStream(FILENAME)));
 
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        }
+        allMeetings = (List<Meeting>) decode.readObject();
+        allContacts = (Set<Contact>) decode.readObject();
+
+        decode.close();
+
+    }
+    //encoding the data from the meetings list and the contacts set collections to an xml file
+    public void encodeFile() {
+        XMLEncoder encode = null;
+        try {
+            encode = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(FILENAME)));
+            encode.writeObject(allMeetings);
+            encode.writeObject(allContacts);
+        } catch (FileNotFoundException ex) {
+            System.err.println(ex);
+        } finally {
+            if (encode != null) {
+                encode.close();
+            }
+        }
+    }
+    //getters and setters generated as serializable implemented
     public Set<Contact> getAllContacts() {
         return allContacts;
     }
@@ -351,84 +413,9 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         this.allMeetings = allMeetings;
     }
 
-    //make this just one method-it can be more generic
-
-    private int generateRandomMeetingID() {
-
-        return (int) Math.abs(Math.random() * Integer.MAX_VALUE);
-    }
-
-    private int generateContactID() {
-
-        return (int) Math.abs(Math.random() * Integer.MAX_VALUE);
-    }
-
-    private boolean meetingExists(Set<Contact> contacts, Calendar date) {
-        boolean meetingExists = false;
-        for (Meeting curr : allMeetings) {
-            if (curr.getContacts().equals(contacts) && curr.getDate().equals(date)) {
-                meetingExists = true;
-                return meetingExists;
-            }
-        }
-        return meetingExists;
-    }
-
-    private boolean meetingIdExists(int id) {
-        boolean idExists = false;
-        for (Meeting curr : allMeetings) {
-            if (curr.getId() == id) {
-                idExists = true;
-                return idExists;
-            }
-        }
-        return idExists;
-    }
-
-    private boolean contactIdExists(int id) {
-        boolean idExists = false;
-        for (Contact curr : allContacts) {
-            if (curr.getId() == id) {
-                idExists = true;
-                return idExists;
-            }
-        }
-        return idExists;
-    }
-    @SuppressWarnings("unchecked")
-    public void decodeFile() {
-        XMLDecoder decode=null;
-        try{
-            decode=new XMLDecoder(new BufferedInputStream(new FileInputStream(FILENAME)));
-
-        }
-        catch(FileNotFoundException ex){
-            ex.printStackTrace();
-        }
-        allMeetings=(List<Meeting>) decode.readObject();
-        allContacts=(Set<Contact>) decode.readObject();
-
-        decode.close();
-
-    }
-
-    public void encodeFile() {
-        XMLEncoder encode = null;
-        try {
-            encode = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(FILENAME)));
-            encode.writeObject(allMeetings);
-            encode.writeObject(allContacts);
-        } catch (FileNotFoundException ex) {
-            System.err.println(ex);
-        } finally {
-            if (encode != null) {
-                encode.close();
-                }
-        }
-    }
     public static void main(String[] args) {
 
-        ContactManager cm =new ContactManagerImpl();
+        ContactManager cm = new ContactManagerImpl();
 
     }
 }
