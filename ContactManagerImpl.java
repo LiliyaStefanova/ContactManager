@@ -4,17 +4,36 @@ import java.io.*;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
+//need to write java doc comments for all the classes and generate
+//need to sort out the IO functions to create a new file
+//notes to a past meeting need to be appended and not overwritten
 
 public class ContactManagerImpl implements ContactManager, Serializable {
 
     private Set<Contact> allContacts;
     private List<Meeting> allMeetings;
-    static final String FILENAME = "contacts.xml";
+    private static final String FILENAME = "contacts.xml";
 
     public ContactManagerImpl() {
         allContacts = new HashSet<Contact>();
-
         allMeetings = new ArrayList<Meeting>();
+        //create a new file and use the structure to check if the file exists before deserializing
+        File f=new File(FILENAME);
+        if(f.exists()){
+            ContactManager cm = null;
+            XMLDecoder d = null;
+
+            try {
+                d = new XMLDecoder(new BufferedInputStream(new FileInputStream(FILENAME)));
+                cm = (ContactManager) d.readObject();
+            } catch (FileNotFoundException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (d != null) {
+                    d.close();
+                }
+            }
+        }
     }
 
     @Override
@@ -133,8 +152,6 @@ public class ContactManagerImpl implements ContactManager, Serializable {
 
     @Override
     public List<Meeting> getFutureMeetingList(Calendar date) {
-        //how can the list be sorted if they are all on the same date?
-
         List<Meeting> futureMeetingsPerDate = new ArrayList<Meeting>();
         Set<Meeting> interim = new TreeSet<Meeting>(new Comparator<Meeting>() {
             @Override
@@ -272,7 +289,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
      * The interface of this method has been amended to return the contact ID
      */
     @Override
-    public int addNewContact(String name, String notes) {
+    public void addNewContact(String name, String notes) {
         int id = 0;
         do {
             id = generateContactID();
@@ -281,7 +298,6 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         //contact deemed unique based on ID only, no checks on duplicate name and notes carried out
         Contact newContact = new ContactImpl(id, name, notes);
         allContacts.add(newContact);
-        return newContact.getId();
     }
 
     @Override
@@ -318,15 +334,30 @@ public class ContactManagerImpl implements ContactManager, Serializable {
 
     @Override
     public void flush() {
-        XMLEncoder encode = null;
-        try {
-            encode = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(FILENAME)));
-            encode.writeObject(this);
-        } catch (FileNotFoundException ex) {
-            System.err.println(ex);
-        } finally {
-            if (encode != null) {
-                encode.close();
+        XMLEncoder encodeMeetings = null;
+        XMLEncoder encodeContacts=null;
+        File contactManager=new File(FILENAME);
+        if(!contactManager.exists()){
+            try{
+            contactManager.createNewFile();
+            }
+            catch(IOException ex){
+                ex.printStackTrace();
+            }
+            try {
+                encodeMeetings = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(FILENAME)));
+                encodeContacts = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(FILENAME)));
+                encodeMeetings.writeObject(allMeetings);
+                encodeMeetings.writeObject(allContacts);
+            } catch (FileNotFoundException ex) {
+                System.err.println(ex);
+            } finally {
+                if (encodeMeetings != null) {
+                    encodeMeetings.close();
+                }
+                if(encodeContacts!=null){
+                    encodeContacts.close();
+                }
             }
         }
     }
@@ -346,6 +377,8 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     public void setAllMeetings(List<Meeting> allMeetings) {
         this.allMeetings = allMeetings;
     }
+
+    //make this just one method-it can be more generic
 
     private int generateRandomMeetingID() {
 
@@ -389,11 +422,15 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         }
         return idExists;
     }
-
+/*
     @SuppressWarnings("supressed")
-    private static ContactManager deserializer() {
+    public static ContactManager deserializer() {
+        //create a new file and use the structure to check if the file exists before deserializing
+        File f=new File(FILENAME);
+        if(f.exists()){
         ContactManager cm = null;
         XMLDecoder d = null;
+
         try {
             d = new XMLDecoder(new BufferedInputStream(new FileInputStream(FILENAME)));
             cm = (ContactManager) d.readObject();
@@ -406,28 +443,13 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         }
         return cm;
 
-
-    }
+    }*/
 
     public static void main(String[] args) {
 
-        ContactManager cm = deserializer();
-        int idJim = cm.addNewContact("Jimmy Page", "VC");
-        int idJoanna = cm.addNewContact("Joanna Parker", "public affairs");
-        int idRonald = cm.addNewContact("Ronald Princeton", "accountant");
-
-        Set<Contact> upcomingMeetingContacts = cm.getContacts("Ronald Princeton");
-        Set<Contact> previousMeetingContacts = cm.getContacts(idJim, idJoanna);
+        ContactManager cm =new ContactManagerImpl();
 
 
-        Calendar upcomingMeeting = Calendar.getInstance();
-        Calendar happenedMeeting = Calendar.getInstance();
-        upcomingMeeting.set(2014, GregorianCalendar.MARCH, 30);
-        happenedMeeting.set(2014, GregorianCalendar.JANUARY, 30);
-        String notes = "Beneficial to understand impact of VC";
-
-        cm.addFutureMeeting(upcomingMeetingContacts, upcomingMeeting);
-        cm.addNewPastMeeting(previousMeetingContacts, happenedMeeting, notes);
 
         cm.flush();
 
