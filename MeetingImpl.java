@@ -9,10 +9,6 @@ public class MeetingImpl implements Meeting,Serializable {
     private Calendar scheduledDate;
     private Set<Contact> meetingAttendees;
 
-    public int getMeetingID() {
-        return meetingID;
-    }
-
     public MeetingImpl(){}
 
     public MeetingImpl(int id, Calendar date, Set<Contact> attendees){
@@ -21,7 +17,13 @@ public class MeetingImpl implements Meeting,Serializable {
         this.meetingAttendees=attendees;
     }
 
-    //equals and hashcode methods added for the purposes of implementing a tree set structure
+    @Override
+    public int getId() {
+
+        return this.meetingID;
+    }
+
+    //equals and hash code methods added for the purposes of implementing a tree set structure
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -43,14 +45,11 @@ public class MeetingImpl implements Meeting,Serializable {
         result = 31 * result + meetingAttendees.hashCode();
         return result;
     }
-
-    @Override
-    public int getId() {
-
-        return this.meetingID;
-    }
-
     //getters and setters as part of Serializable implementation(required for XML encoding)
+
+    public int getMeetingID() {
+        return meetingID;
+    }
 
     @Override
     public Calendar getDate() {
