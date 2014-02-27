@@ -38,7 +38,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         Meeting newFutureMeeting = null;
         //check date against current date to determine if in the past
         if (date.getTime().compareTo(now.getTime()) < 0) {
-            throw new IllegalArgumentException("Date specified in the past");
+            throw new IllegalArgumentException("Date specified is in the past");
         } else {
             for (Contact curr : contacts) {
                 if (!allContacts.contains(curr)) {
@@ -58,10 +58,11 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         if (!meetingExists(contacts, date)) {
             newFutureMeeting = new FutureMeetingImpl(id, date, contacts);
             allMeetings.add(newFutureMeeting);
+            id=newFutureMeeting.getId();
         } else {
-            throw new IllegalArgumentException("Meeting already exists");
+            System.out.println("Meeting already exists!");
         }
-        return newFutureMeeting.getId();
+        return id;
     }
 
     @Override
@@ -95,7 +96,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
             futureMeeting = (FutureMeeting) meeting;
 
         } else if (meeting instanceof PastMeeting) {
-            throw new IllegalArgumentException("This meeting is happening in the past");
+            throw new IllegalArgumentException("This meeting has happened in the past");
         }
 
         return futureMeeting;
@@ -115,6 +116,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     @Override
     public List<Meeting> getFutureMeetingList(Contact contact) {
         if (!allContacts.contains(contact)) {
+            //contact is not an entry in allContacts
             throw new IllegalArgumentException("Contact does not exist in records");
         }
         List<Meeting> futureMeetingsPerContact = new ArrayList<Meeting>();
@@ -129,7 +131,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         });
 
         for (Meeting curr : allMeetings) {
-            //only add future meetings to the list
+            //only adding future meetings that the contact was part of to the list
             if (curr instanceof FutureMeeting) {
                 if (curr.getContacts().contains(contact)) {
                     interimMeetingList.add(curr);
@@ -154,8 +156,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
                 //compares items by date and time
                 int compCode = o1.getDate().compareTo(o2.getDate());
                 if (compCode == 0) {
-                    //if so, it checks the ids to confirm if they are duplicates on the same day
-                    //or different meetings
+                    //and then by id
                     return new Integer(o1.getId()).compareTo(o2.getId());
                 } else {
                     return compCode;
@@ -165,7 +166,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         for (Meeting curr : allMeetings) {
             //only add future meetings to the list
             if (curr instanceof FutureMeeting) {
-                //populate list with all meetings on the same date, disregard time to avoid filtering out as duplicates
+                //only date component is considered; time aspect disregarded
                 if (curr.getDate().get(Calendar.YEAR) == date.get(Calendar.YEAR) && curr.getDate().
                         get(Calendar.DAY_OF_MONTH) == date.get(Calendar.DAY_OF_MONTH) && curr.getDate().
                         get(Calendar.MONTH) == date.get(Calendar.MONTH)) {
@@ -188,7 +189,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
             throw new IllegalArgumentException("Contact does not exist");
         }
         List<PastMeeting> pastMeetingsPerContact = new ArrayList<PastMeeting>();
-        //all meetings for a contact will be put in a tree set to sort and remove duplicates
+        //all meetings for a contact will be put in a tree set to sort by date and remove duplicates
         Set<PastMeeting> interim = new TreeSet<PastMeeting>(new Comparator<Meeting>() {
             @Override
             public int compare(Meeting o1, Meeting o2) {
@@ -216,6 +217,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
 
     @Override
     public void addNewPastMeeting(Set<Contact> contacts, Calendar date, String text) {
+        //a brand new meeting which was not on record before is added
         int id = 0;
         Calendar now = Calendar.getInstance();
         if (date.getTime().compareTo(now.getTime()) > 0) {
@@ -250,30 +252,38 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         }
     }
 
+    /**
+     * The implementation of this method assumes that a meeting which was added as a future meeting but
+     * is now in the past can only be converted to a past meeting using this method
+     * Implementation also assumes that where a past meeting was already added and this method is used to
+     * add notes to it, the notes will be appended to any notes in place previously
+     * @param id the ID of the meeting
+     * @param text messages to be added about the meeting.
+     */
     @Override
     public void addMeetingNotes(int id, String text) {
         Calendar now = Calendar.getInstance();
-        Meeting convertedToPast = null;
-        Meeting updatedPast = null;
+        Meeting convertedToPastMeeting = null;
+        Meeting updatedPastMeeting = null;
         if (text == null) {
-            throw new NullPointerException("Notes are not specified");
+            throw new NullPointerException("Please specify notes for the meeting");
         } else if (!meetingIdExists(id)) {
             throw new IllegalArgumentException("Meeting does not exist");
         }
         for (Meeting curr : allMeetings) {
             if (curr.getId() == id) {
                 if (curr.getDate().getTime().compareTo(now.getTime()) > 0) {
-                    throw new IllegalStateException("Meeting is set for a date in the future");
+                    throw new IllegalStateException("This meeting is set for a date in the future");
                 } else if (curr instanceof PastMeeting) {
                     //replace existing past meeting with a new identical past meeting with an addition to the notes
-                    updatedPast = new PastMeetingImpl(curr.getId(), curr.getDate(), curr.getContacts(), ((PastMeeting) curr).getNotes());
-                    allMeetings.add(updatedPast);
+                    updatedPastMeeting = new PastMeetingImpl(curr.getId(), curr.getDate(), curr.getContacts(), ((PastMeeting) curr).getNotes());
+                    allMeetings.add(updatedPastMeeting);
                     allMeetings.remove(curr);
                 } else if (curr instanceof FutureMeeting) {
                     //replace existing future meeting with an identical past meeting, remove future meeting from records
-                    convertedToPast = new PastMeetingImpl(curr.getId(), curr.getDate(), curr.getContacts(), text);
+                    convertedToPastMeeting = new PastMeetingImpl(curr.getId(), curr.getDate(), curr.getContacts(), text);
                     allMeetings.remove(curr);
-                    allMeetings.add(convertedToPast);
+                    allMeetings.add(convertedToPastMeeting);
                 }
             }
         }
@@ -282,6 +292,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     @Override
     public void addNewContact(String name, String notes) {
         int id = 0;
+        //regenerate id until one that does not exist already in contacts is provided
         do {
             id = generateRandomID();
         } while (contactIdExists(id));
@@ -302,7 +313,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
             }
         }
         if (contacts.size() != ids.length) {
-            throw new IllegalArgumentException("ID(s) provided is for a non-existent contact");
+            throw new IllegalArgumentException("One of the IDs provided is for a non-existent contact");
         }
 
         return contacts;
@@ -312,7 +323,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     public Set<Contact> getContacts(String name) {
         Set<Contact> contactsContainingName = new HashSet<Contact>();
         if (name == null) {
-            throw new NullPointerException("Name provided is null");
+            throw new NullPointerException("Name provided is not valid");
         } else {
             for (Contact curr : allContacts) {
                 if (curr.getName().contains(name)) {
@@ -328,7 +339,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         File contactManager = new File(FILENAME);
         encodeFile();
     }
-    //generates random integer values to be used as meeting or contact IDs
+    //generates a random integer value to be used as meeting or contact ID
     private int generateRandomID() {
         return (int) Math.abs(Math.random() * Integer.MAX_VALUE);
     }
@@ -343,7 +354,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         }
         return meetingExists;
     }
-    //determines if a meeting ID already exists and needs to be regenerated
+    //determines if a meeting ID already exists
     private boolean meetingIdExists(int id) {
         boolean idExists = false;
         for (Meeting curr : allMeetings) {
@@ -354,7 +365,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         }
         return idExists;
     }
-    //determines if a contact ID already exists and needs to be regenerated
+    //determines if a contact ID already exists
     private boolean contactIdExists(int id) {
         boolean idExists = false;
         for (Contact curr : allContacts) {
@@ -415,7 +426,6 @@ public class ContactManagerImpl implements ContactManager, Serializable {
 
     public static void main(String[] args) {
 
-        ContactManager cm = new ContactManagerImpl();
-
+       
     }
 }
