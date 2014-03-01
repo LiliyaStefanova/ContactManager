@@ -594,7 +594,6 @@ public class ContactManagerTest {
 
     //End Contact related test cases
 
-
     //Begin I/O related test cases
 
 
@@ -626,7 +625,7 @@ public class ContactManagerTest {
 
         System.out.println("ID is:" + ContactManagerReloadedII.getFutureMeeting(idRecord).getId());
 
-       // ContactManagerReloadedII.addFutureMeeting(contactsContainI, april302014);
+        ContactManagerReloadedII.addFutureMeeting(contactsContainI, april302014);
 
         assertEquals(idRecord, idRetrieve);
 
