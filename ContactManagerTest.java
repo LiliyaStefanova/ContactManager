@@ -13,8 +13,6 @@ import java.util.*;
 public class ContactManagerTest {
 
     private ContactManager contactManager;
-    private ContactManager contactManagerReloaded;
-    private ContactManager ContactManagerReloadedII;
     private Calendar december72013;
     private Calendar december152013;
     private Calendar march302014;
@@ -600,43 +598,51 @@ public class ContactManagerTest {
     @Test
     public void saveDataToFileTest() {
 
+        ContactManager contactManagerSecondInstance=null;
+        ContactManager contactManagerThirdInstance=null;
+        //set up a contact register
         contactManager.addNewContact("John", "investor");
         contactManager.addNewContact("Tom", "investor");
         contactManager.addNewContact("Jim", "designer");
         contactManager.addNewContact("Lin", "lawyer");
         contactManager.addNewContact("Tom", "lawyer");
 
+        //retrieve a subset of contacts
         Set<Contact> contacts1 = contactManager.getContacts("o");
-
+        //add a meeting to current instance
         int idRecord = contactManager.addFutureMeeting(contacts1, april302014);
-        System.out.println("ID is: " + idRecord);
+        //flush first instance
         contactManager.flush();
 
-        contactManagerReloaded = new ContactManagerImpl();
 
-        Set<Contact> contactsContainI = contactManagerReloaded.getContacts("i");
+        //create a second instance of contact manager, i.e. re-open program
+        contactManagerSecondInstance = new ContactManagerImpl();
 
-        contactManagerReloaded.addNewPastMeeting(contactsContainI, december152013, "notes");
+        Set<Contact> contactsContainI = contactManagerSecondInstance.getContacts("i");
+        //add more meetings to the new instance
+        contactManagerSecondInstance.addNewPastMeeting(contactsContainI, december152013, "notes");
+        //flush second instance
+        contactManagerSecondInstance.flush();
+        //create a third instance
+        contactManagerThirdInstance = new ContactManagerImpl();
 
-        contactManagerReloaded.flush();
+        //check if meetings and contacts added in the previous instances are accessible in this instance
+        int idRetrieve = contactManagerThirdInstance.getFutureMeeting(idRecord).getId();
 
-        ContactManagerReloadedII = new ContactManagerImpl();
-        int idRetrieve = ContactManagerReloadedII.getFutureMeeting(idRecord).getId();
-
-        System.out.println("ID is:" + ContactManagerReloadedII.getFutureMeeting(idRecord).getId());
-
-        ContactManagerReloadedII.addFutureMeeting(contactsContainI, april302014);
+        contactManagerThirdInstance.addFutureMeeting(contactsContainI, april302014);
 
         assertEquals(idRecord, idRetrieve);
 
-        for (Contact c : ContactManagerReloadedII.getContacts("Tom")) {
+        for (Contact c : contactManagerThirdInstance.getContacts("Tom")) {
             System.out.println(c.getName());
         }
 
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void withoutFlush() {
+
+        ContactManager contactManagerSecondInstance=null;
         contactManager.addNewContact("John", "investor");
         contactManager.addNewContact("Tom", "investor");
         contactManager.addNewContact("Jim", "designer");
@@ -645,9 +651,10 @@ public class ContactManagerTest {
         Set<Contact> contactsContainingO = contactManager.getContacts("o");
 
         int id = contactManager.addFutureMeeting(contactsContainingO, april302014);
-        ContactManagerReloadedII = new ContactManagerImpl();
 
-        assertNull(contactManagerReloaded.getFutureMeeting(id));
+        contactManagerSecondInstance = new ContactManagerImpl();
+
+        assertNull(contactManagerSecondInstance.getFutureMeeting(id));
     }
 
 
