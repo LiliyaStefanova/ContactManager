@@ -14,21 +14,29 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     private static final String FILENAME = "contacts.xml";
 
     public ContactManagerImpl() {
+        this(true);
+    }
+
+    public ContactManagerImpl(boolean deserialise) {
         allContacts = new HashSet<Contact>();
         allMeetings = new ArrayList<Meeting>();
-        //file is loaded when the program starts, i.e. when a new Contact manager object is created
-        File f = new File(FILENAME);
-        if (f.exists() && f.length() > 0) {
-            decodeFile();
-        } else if (f.exists() && f.length() == 0) {
-            //do nothing if file exists but is empty
-        } else if (!f.exists()) {
-            try {
-                f.createNewFile();
-            } catch (IOException ex) {
-                ex.printStackTrace();
+
+        if (deserialise) {
+            //file is loaded when the program starts, i.e. when a new Contact manager object is created
+            File f = new File(FILENAME);
+            if (f.exists() && f.length() > 0) {
+                decodeFile();
+            } else if (f.exists() && f.length() == 0) {
+                //do nothing if file exists but is empty
+            } else if (!f.exists()) {
+                try {
+                    f.createNewFile();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
+
     }
 
     @Override
@@ -276,7 +284,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
                     throw new IllegalStateException("This meeting is set for a date in the future");
                 } else if (curr instanceof PastMeeting) {
                     //replace existing past meeting with a new identical past meeting with an addition to the notes
-                    updatedPastMeeting = new PastMeetingImpl(curr.getId(), curr.getDate(), curr.getContacts(), ((PastMeeting) curr).getNotes());
+                    updatedPastMeeting = new PastMeetingImpl(curr.getId(), curr.getDate(), curr.getContacts(), ((PastMeeting) curr).getNotes()+" "+text);
                     allMeetings.add(updatedPastMeeting);
                     allMeetings.remove(curr);
                 } else if (curr instanceof FutureMeeting) {
@@ -426,6 +434,6 @@ public class ContactManagerImpl implements ContactManager, Serializable {
 
     public static void main(String[] args) {
 
-       
+
     }
 }
