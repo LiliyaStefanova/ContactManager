@@ -76,4 +76,21 @@ public class ContactImpl implements Contact, Serializable {
         this.contactNotes = contactNotes;
     }
 
+    //added equals and hash code for the purpose of set implementation
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ContactImpl)) return false;
+
+        ContactImpl contact = (ContactImpl) o;
+
+        if (contactID != contact.contactID) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return contactID;
+    }
 }
