@@ -631,6 +631,7 @@ public class ContactManagerTest {
 
         contactManagerThirdInstance.addFutureMeeting(contactsContainI, april302014);
 
+        contactManagerThirdInstance.flush();
         assertEquals(idRecord, idRetrieve);
 
         for (Contact c : contactManagerThirdInstance.getContacts("Tom")) {
