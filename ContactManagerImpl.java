@@ -5,12 +5,12 @@ import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
 //need to write java doc comments for all the classes and generate
-//need to refactor the checkID exists function to make it common and re-usable
 
 public class ContactManagerImpl implements ContactManager, Serializable {
 
     private Set<Contact> allContacts;
     private List<Meeting> allMeetings;
+    //this implementation uses an xml file to write data to
     private static final String FILENAME = "contacts.xml";
 
     public ContactManagerImpl() {
@@ -27,7 +27,9 @@ public class ContactManagerImpl implements ContactManager, Serializable {
             if (f.exists() && f.length() > 0) {
                 decodeFile();
             } else if (f.exists() && f.length() == 0) {
-                //do nothing if file exists but is empty
+                System.out.println("File is empty");
+                //warn user if file exists but is empty
+                //wait for file to be written to
             } else if (!f.exists()) {
                 try {
                     f.createNewFile();
@@ -101,6 +103,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
             }
         }
         if (meeting instanceof FutureMeeting) {
+            //down-casting to FutureMeeting
             futureMeeting = (FutureMeeting) meeting;
 
         } else if (meeting instanceof PastMeeting) {
@@ -155,6 +158,13 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         return futureMeetingsPerContact;
     }
 
+    /**
+     * This method retrieves meetings that occurred on a given date and returns them in a list
+     * Meetings are chronologically sorted by time
+     * A tree set structure is used to eliminate duplicates and allow sorting
+     * @param date the date
+     * @return list of meetings that took place on that day
+     */
     @Override
     public List<Meeting> getFutureMeetingList(Calendar date) {
         List<Meeting> futureMeetingsPerDate = new ArrayList<Meeting>();
@@ -223,9 +233,17 @@ public class ContactManagerImpl implements ContactManager, Serializable {
 
     }
 
+    /**
+     * This method adds a brand new meeting which was not on record previously but
+     * took place in the past
+     * The method implementation assumes that some notes need to be specified in the constructor as the meeting
+     * is created
+     * @param contacts a list of participants
+     * @param date the date on which the meeting took place
+     * @param text messages to be added about the meeting.
+     */
     @Override
     public void addNewPastMeeting(Set<Contact> contacts, Calendar date, String text) {
-        //a brand new meeting which was not on record before is added
         int id = 0;
         Calendar now = Calendar.getInstance();
         if (date.getTime().compareTo(now.getTime()) > 0) {
@@ -297,6 +315,12 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         }
     }
 
+    /**
+     * The addNotes() method for Contact is not being used at all as the notes are set as part of the constructor
+     * contact deemed unique based on ID only, as duplicate name and/or notes are possible
+     * @param name the name of the contact.
+     * @param notes notes to be added about the contact.
+     */
     @Override
     public void addNewContact(String name, String notes) {
         int id = 0;
@@ -305,7 +329,6 @@ public class ContactManagerImpl implements ContactManager, Serializable {
             id = generateRandomID();
         } while (contactIdExists(id));
 
-        //contact deemed unique based on ID only, as duplicate name and/or notes are possible
         Contact newContact = new ContactImpl(id, name, notes);
         allContacts.add(newContact);
     }
@@ -347,10 +370,12 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         File contactManager = new File(FILENAME);
         encodeFile();
     }
+
     //generates a random integer value to be used as meeting or contact ID
     private int generateRandomID() {
         return (int) Math.abs(Math.random() * Integer.MAX_VALUE);
     }
+
     //determines if a meeting to be added already exists
     private boolean meetingExists(Set<Contact> contacts, Calendar date) {
         boolean meetingExists = false;
@@ -400,7 +425,12 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         decode.close();
 
     }
-    //encoding the data from the meetings list and the contacts set collections to an xml file
+
+    /**
+     * Encoding the data from the meetings list and the contacts set collections to an xml file
+     * not checking if the file exists here as this check was made previously as part of the program launch
+     */
+
     public void encodeFile() {
         XMLEncoder encode = null;
         try {
