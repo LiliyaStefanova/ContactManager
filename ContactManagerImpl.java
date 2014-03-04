@@ -377,7 +377,6 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     //writes the contents of the contact manager collections to a file
     @Override
     public void flush() {
-       // File contactManager = new File(FILENAME);
         encodeFile();
     }
 
@@ -425,15 +424,17 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         XMLDecoder decode = null;
         try {
             decode = new XMLDecoder(new BufferedInputStream(new FileInputStream(FILENAME)));
+            allMeetings = (List<Meeting>) decode.readObject();
+            allContacts = (Set<Contact>) decode.readObject();
 
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         }
-        allMeetings = (List<Meeting>) decode.readObject();
-        allContacts = (Set<Contact>) decode.readObject();
-
-        decode.close();
-
+        finally {
+            if(decode!=null){
+                decode.close();
+            }
+        }
     }
 
     /**
