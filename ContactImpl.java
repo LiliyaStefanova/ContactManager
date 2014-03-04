@@ -1,12 +1,5 @@
 import java.io.Serializable;
 
-/**
- * Created with IntelliJ IDEA.
- * User: liliya
- * Date: 11/02/14
- * Time: 15:01
- * To change this template use File | Settings | File Templates.
- */
 public class ContactImpl implements Contact, Serializable {
 
     private int contactID;

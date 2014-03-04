@@ -1,11 +1,4 @@
 /**
- * Created with IntelliJ IDEA.
- * User: liliya
- * Date: 11/02/14
- * Time: 12:45
- * To change this template use File | Settings | File Templates.
- */
-/**
  * A meeting that was held in the past.
  *
  * It includes your notes about what happened and what was agreed.

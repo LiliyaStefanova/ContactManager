@@ -1,10 +1,3 @@
-/**
- * Created with IntelliJ IDEA.
- * User: liliya
- * Date: 11/02/14
- * Time: 12:43
- * To change this template use File | Settings | File Templates.
- */
 import java.util.Calendar;
 import java.util.Set;
 

@@ -1,10 +1,4 @@
-/**
- * Created with IntelliJ IDEA.
- * User: liliya
- * Date: 11/02/14
- * Time: 13:30
- * To change this template use File | Settings | File Templates.
- */
+
 import org.junit.*;
 import static org.junit.Assert.*;
 
@@ -25,7 +19,7 @@ public class MeetingTest {
         testContact.add(contact1);
         testContact.add(contact2);
         Calendar meetingDate=Calendar.getInstance();
-        meetingDate.set(2012,Calendar.DECEMBER,11);
+        meetingDate.set(2012,Calendar.DECEMBER,11, 10, 00);
 
         testMeeting=new MeetingImpl(4567,meetingDate, testContact);
     }
@@ -45,8 +39,8 @@ public class MeetingTest {
     @Test
     public void getMeetingDateTest(){
         Calendar expectedDate=Calendar.getInstance();
-        expectedDate.set(2012,Calendar.DECEMBER,11);
-        assertTrue(expectedDate.equals(testMeeting.getDate()));
+        expectedDate.set(2012,Calendar.DECEMBER,11, 10, 00);
+        assertEquals(expectedDate, testMeeting.getDate());
 
     }
 
@@ -62,7 +56,7 @@ public class MeetingTest {
         expectedContacts.add(contact2);
 
         assertEquals(expectedContacts.size(),testMeeting.getContacts().size());
-        //need to fix this one does not work
+
         assertTrue(expectedContacts.equals(testMeeting.getContacts()));
 
     }

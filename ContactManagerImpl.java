@@ -4,7 +4,6 @@ import java.io.*;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
-//need to write java doc comments for all the classes and generate
 
 public class ContactManagerImpl implements ContactManager, Serializable {
 
@@ -85,9 +84,14 @@ public class ContactManagerImpl implements ContactManager, Serializable {
             }
         }
         if (meeting instanceof PastMeeting) {
+            //down-casting to past meeting
             pastMeeting = (PastMeeting) meeting;
 
         } else if (meeting instanceof FutureMeeting) {
+            /**
+             * It is assumed that if a future meeting has gone into the past but has not been converted to a
+             * past meeting using addMeetingNotes() yet it will throw an exception
+             */
             throw new IllegalArgumentException("This meeting is happening in the future");
         }
         return pastMeeting;
@@ -123,7 +127,13 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         }
         return meeting;
     }
-
+    /**
+     * This method retrieves meetings that a contact attended and returns them in a list
+     * Meetings are chronologically sorted by dat and time
+     * A tree set structure is used to eliminate duplicates and allow sorting
+     * @param contact
+     * @return list of meetings that took place on that day
+     */
     @Override
     public List<Meeting> getFutureMeetingList(Contact contact) {
         if (!allContacts.contains(contact)) {
@@ -171,11 +181,11 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         Set<Meeting> interim = new TreeSet<Meeting>(new Comparator<Meeting>() {
             @Override
             public int compare(Meeting o1, Meeting o2) {
-                //compares items by date and time
+                //sorts items by date and time
                 int compCode = o1.getDate().compareTo(o2.getDate());
                 if (compCode == 0) {
                     //and then by id
-                    return new Integer(o1.getId()).compareTo(o2.getId());
+                    return Integer.valueOf(o1.getId()).compareTo(o2.getId());
                 } else {
                     return compCode;
                 }
@@ -184,7 +194,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         for (Meeting curr : allMeetings) {
             //only add future meetings to the list
             if (curr instanceof FutureMeeting) {
-                //only date component is considered; time aspect disregarded
+                //only date component is considered; time component disregarded
                 if (curr.getDate().get(Calendar.YEAR) == date.get(Calendar.YEAR) && curr.getDate().
                         get(Calendar.DAY_OF_MONTH) == date.get(Calendar.DAY_OF_MONTH) && curr.getDate().
                         get(Calendar.MONTH) == date.get(Calendar.MONTH)) {
@@ -237,7 +247,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
      * This method adds a brand new meeting which was not on record previously but
      * took place in the past
      * The method implementation assumes that some notes need to be specified in the constructor as the meeting
-     * is created
+     * is created, even if empty
      * @param contacts a list of participants
      * @param date the date on which the meeting took place
      * @param text messages to be added about the meeting.
@@ -274,17 +284,17 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         if (!meetingExists(contacts, date)) {
             allMeetings.add(newPastMeeting);
         } else {
-            throw new IllegalArgumentException("Meeting already exists");
+            System.out.println("Meeting already exists!");
         }
     }
 
     /**
      * The implementation of this method assumes that a meeting which was added as a future meeting but
-     * is now in the past can only be converted to a past meeting using this method
-     * Implementation also assumes that where a past meeting was already added and this method is used to
-     * add notes to it, the notes will be appended to any notes in place previously
+     * is now in the past can only be converted to a past meeting with this method being called
+     * Implementation also assumes that where a past meeting was already added, this method can be used to
+     * update its notes,and the notes will be appended to anything previously in place in the field
      * @param id the ID of the meeting
-     * @param text messages to be added about the meeting.
+     * @param text notes to be added about the meeting.
      */
     @Override
     public void addMeetingNotes(int id, String text) {
@@ -367,7 +377,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     //writes the contents of the contact manager collections to a file
     @Override
     public void flush() {
-        File contactManager = new File(FILENAME);
+       // File contactManager = new File(FILENAME);
         encodeFile();
     }
 
@@ -411,7 +421,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     }
     //decoding the xml file back into the meetings and contacts objects
     @SuppressWarnings("unchecked")
-    public void decodeFile() {
+    private void decodeFile() {
         XMLDecoder decode = null;
         try {
             decode = new XMLDecoder(new BufferedInputStream(new FileInputStream(FILENAME)));
@@ -431,7 +441,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
      * not checking if the file exists here as this check was made previously as part of the program launch
      */
 
-    public void encodeFile() {
+    private void encodeFile() {
         XMLEncoder encode = null;
         try {
             encode = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(FILENAME)));

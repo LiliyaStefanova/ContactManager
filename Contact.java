@@ -1,12 +1,4 @@
 /**
- * Created with IntelliJ IDEA.
- * User: liliya
- * Date: 11/02/14
- * Time: 12:39
- * To change this template use File | Settings | File Templates.
- */
-
-/**
  * A contact is a person we are making business with or may do in the future.
  * Contacts have an ID (unique), a name (probably unique, but maybe
  * not), and notes that the user may want to save about them.
