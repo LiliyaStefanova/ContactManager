@@ -8,17 +8,13 @@ public class ContactImpl implements Contact, Serializable {
 
     public ContactImpl(){}
 
-    public ContactImpl(int id, String name, String notes){
+    public ContactImpl(int id, String name){
         if(name==null){
             throw new NullPointerException("Name cannot be null");
         }
-        else if(notes==null){
-            throw new NullPointerException("Notes cannot be null");
-        }
         this.contactID=id;
         this.contactName=name;
-        this.contactNotes=notes;
-    }
+        }
 
     @Override
     public int getId() {
