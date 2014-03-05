@@ -20,8 +20,10 @@ public class ContactTest {
     @Before
     public void buildUp(){
 
-    testContact=new ContactImpl(1234, "Steve", "potential sponsor");
-    testContact2=new ContactImpl(2345, "John", ""); //no notes for this contact
+    testContact=new ContactImpl(1234, "Steve");
+    testContact.addNotes("potential sponsor");
+    testContact2=new ContactImpl(2345, "John");
+     testContact2.addNotes("");//no notes for this contact
 
     }
 
