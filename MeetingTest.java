@@ -14,8 +14,10 @@ public class MeetingTest {
     @Before
     public void buildUp(){
         testContact=new HashSet<Contact>();
-        Contact contact1=new ContactImpl(1234, "Jane", "venture capital");
-        Contact contact2=new ContactImpl(3456, "Henry", "investor");
+        Contact contact1=new ContactImpl(1234, "Jane");
+        contact1.addNotes("venture capital");
+        Contact contact2=new ContactImpl(3456, "Henry");
+        contact2.addNotes("investor");
         testContact.add(contact1);
         testContact.add(contact2);
         Calendar meetingDate=Calendar.getInstance();
@@ -50,8 +52,11 @@ public class MeetingTest {
     @Test
     public void getMeetingContactsTest(){
         Set<Contact> expectedContacts=new HashSet<Contact>();
-        Contact contact1=new ContactImpl(1234, "Jane", "venture capital");
-        Contact contact2=new ContactImpl(3456, "Henry", "investor");
+        testContact=new HashSet<Contact>();
+        Contact contact1=new ContactImpl(1234, "Jane");
+        contact1.addNotes("venture capital");
+        Contact contact2=new ContactImpl(3456, "Henry");
+        contact2.addNotes("investor");
         expectedContacts.add(contact1);
         expectedContacts.add(contact2);
 
