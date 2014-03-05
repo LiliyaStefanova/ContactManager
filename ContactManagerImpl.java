@@ -326,8 +326,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     }
 
     /**
-     * The addNotes() method for Contact is not being used at all as the notes are set as part of the constructor
-     * contact deemed unique based on ID only, as duplicate name and/or notes are possible
+     * Contact deemed unique based on ID only, as duplicate name and/or notes are possible
      * @param name the name of the contact.
      * @param notes notes to be added about the contact.
      */
@@ -339,7 +338,13 @@ public class ContactManagerImpl implements ContactManager, Serializable {
             id = generateRandomID();
         } while (contactIdExists(id));
 
-        Contact newContact = new ContactImpl(id, name, notes);
+        Contact newContact = new ContactImpl(id, name);
+        if(notes==null){
+            throw new NullPointerException("Notes cannot be null");
+        }
+        else{
+            newContact.addNotes(notes);
+        }
         allContacts.add(newContact);
     }
 
@@ -374,18 +379,30 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         }
         return contactsContainingName;
     }
-    //writes the contents of the contact manager collections to a file
+
+    /**
+     *  Writes the contents of the contact manager collections to a file
+     */
+
     @Override
     public void flush() {
         encodeFile();
     }
 
-    //generates a random integer value to be used as meeting or contact ID
+    /**
+     *  generates a random integer value to be used as meeting or contact ID
+     * @return random ID
+     */
     private int generateRandomID() {
         return (int) Math.abs(Math.random() * Integer.MAX_VALUE);
     }
 
-    //determines if a meeting to be added already exists
+    /**
+     * Determines if a meeting to be added already exists
+     * @param contacts
+     * @param date
+     * @return true or false depending on whether the meeting exists
+     */
     private boolean meetingExists(Set<Contact> contacts, Calendar date) {
         boolean meetingExists = false;
         for (Meeting curr : allMeetings) {
@@ -396,7 +413,11 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         }
         return meetingExists;
     }
-    //determines if a meeting ID already exists
+    /**
+     * Determines if a meeting to be added already exists
+     * @param id
+     * @return true or false depending on whether the ID exists
+     */
     private boolean meetingIdExists(int id) {
         boolean idExists = false;
         for (Meeting curr : allMeetings) {
@@ -407,7 +428,11 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         }
         return idExists;
     }
-    //determines if a contact ID already exists
+    /**
+     * Determines if a contact to be added already exists
+     * @param id
+     * @return true or false depending on whether the ID exists
+     */
     private boolean contactIdExists(int id) {
         boolean idExists = false;
         for (Contact curr : allContacts) {
@@ -418,7 +443,11 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         }
         return idExists;
     }
-    //decoding the xml file back into the meetings and contacts objects
+
+    /**
+     * Decoding the xml file back into the meetings and contacts objects
+     */
+
     @SuppressWarnings("unchecked")
     private void decodeFile() {
         XMLDecoder decode = null;
@@ -473,8 +502,5 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         this.allMeetings = allMeetings;
     }
 
-    public static void main(String[] args) {
 
-
-    }
 }
