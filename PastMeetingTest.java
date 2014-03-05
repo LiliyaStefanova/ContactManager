@@ -18,10 +18,10 @@ public class PastMeetingTest {
         Calendar date = Calendar.getInstance();
         date.set(2013, Calendar.JANUARY, 23);
         testContact = new HashSet<Contact>();
-        Contact contact1 = new ContactImpl(1234, "Jane", "venture capital");
-        Contact contact2 = new ContactImpl(3456, "Henry", "investor");
-        testContact.add(contact1);
-        testContact.add(contact2);
+        Contact contact1=new ContactImpl(1234, "Jane");
+        contact1.addNotes("venture capital");
+        Contact contact2=new ContactImpl(3456, "Henry");
+        contact2.addNotes("investor");
         pastMeetingTest1 = new PastMeetingImpl(1234, date, testContact, "Very productive");
     }
 
