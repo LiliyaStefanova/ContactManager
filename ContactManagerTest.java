@@ -63,7 +63,8 @@ public class ContactManagerTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void addFutureMeetingNonExistentContactTest() {
-        Contact c = new ContactImpl(1234, "Jim", "non-existent");
+        Contact c = new ContactImpl(1234, "Jim");
+        c.addNotes( "non-existent");
         Set<Contact> nonExistentContact = new HashSet<Contact>();
         nonExistentContact.add(c);
         contactManager.addFutureMeeting(nonExistentContact, march302014);
@@ -185,7 +186,8 @@ public class ContactManagerTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void getFutureMeetingListPerContactNonExistingContactTest() {
-        Contact c = new ContactImpl(1234, "Fred", "tax");
+        Contact c = new ContactImpl(1234, "Fred");
+        c.addNotes("tax");
         contactManager.getFutureMeetingList(c);
     }
 
@@ -344,7 +346,8 @@ public class ContactManagerTest {
     @Test(expected = IllegalArgumentException.class)
     public void getPastMeetingsPerNonExistentContactTest() {
 
-        Contact c = new ContactImpl(1234, "James", "notes");
+        Contact c = new ContactImpl(1234, "James");
+        c.addNotes( "notes");
 
         contactManager.getPastMeetingList(c);
     }
@@ -381,7 +384,8 @@ public class ContactManagerTest {
     @Test(expected = IllegalArgumentException.class)
     public void addNewPastMeetingEmptyNonExistentContactTest() {
 
-        Contact c = new ContactImpl(34567, "Constantine", "development");
+        Contact c = new ContactImpl(34567, "Constantine");
+        c.addNotes("Notes");
 
         Set<Contact> emptyContactList = new HashSet<Contact>();
 
@@ -634,39 +638,6 @@ public class ContactManagerTest {
 
         contactManagerThirdInstance.flush();
         assertEquals(idRecord, idRetrieve);
-
-        for (Contact c : contactManagerThirdInstance.getContacts("Tom")) {
-            System.out.println(c.getName());
-        }
-
-    }
-
-    @Test
-    public void saveDataToFileContactsOnly() {
-
-        //set up a contact register
-        contactManager.addNewContact("John", "investor");
-        contactManager.addNewContact("Tom", "investor");
-        contactManager.addNewContact("Jim", "designer");
-        contactManager.addNewContact("Lin", "lawyer");
-        contactManager.addNewContact("Tom", "lawyer");
-
-        contactManager.flush();
-
-
-        //create a second instance of contact manager, i.e. re-open program
-        ContactManager contactManagerSecondInstance = new ContactManagerImpl();
-
-        //flush second instance
-        contactManagerSecondInstance.flush();
-        //create a third instance
-        ContactManager contactManagerThirdInstance = new ContactManagerImpl();
-
-        //check if meetings and contacts added in the previous instances are accessible in this instance
-
-        contactManagerThirdInstance.addNewContact("Ben", "marketing exec");
-
-        contactManagerThirdInstance.flush();
 
         for (Contact c : contactManagerThirdInstance.getContacts("Tom")) {
             System.out.println(c.getName());
