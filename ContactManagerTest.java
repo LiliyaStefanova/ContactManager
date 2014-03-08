@@ -155,6 +155,27 @@ public class ContactManagerTest {
     }
 
     @Test
+    public void getMeetingWithPastMeetingTest(){
+        contacts1 = generateListOfContacts1();
+        Contact shirley=null;
+        PastMeeting meeting=null;
+        contactManager.addNewPastMeeting(contacts1, december152013, "brief but productive");
+        for(Contact curr:contacts1){
+            shirley=curr;
+        }
+        List<PastMeeting> pastMeetingList=contactManager.getPastMeetingList(shirley);
+
+        for(PastMeeting curr: pastMeetingList){
+            meeting=curr;
+        }
+        int id=meeting.getId();
+        PastMeeting pastMeeting=(PastMeeting)contactManager.getMeeting(id);
+
+        assertEquals("brief but productive",pastMeeting.getNotes());
+
+    }
+
+    @Test
     public void getMeetingNonExistentTest() {
         assertNull(contactManager.getMeeting(12345));
     }
