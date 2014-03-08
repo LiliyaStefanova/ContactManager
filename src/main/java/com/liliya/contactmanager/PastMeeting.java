@@ -1,3 +1,5 @@
+package com.liliya.contactmanager;
+
 /**
  * A meeting that was held in the past.
  *

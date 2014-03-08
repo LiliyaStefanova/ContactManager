@@ -1,3 +1,4 @@
+package com.liliya.contactmanager;
 
 import org.junit.*;
 
@@ -50,7 +51,7 @@ public class ContactManagerTest {
 
         assertNotNull(meeting);
 
-        assertEquals(march302014, contactManager.getMeeting(meetingID).getDate());
+        Assert.assertEquals(march302014, contactManager.getMeeting(meetingID).getDate());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -96,7 +97,7 @@ public class ContactManagerTest {
         for (PastMeeting meet : pastMeetings) {
             meetTest = meet;
         }
-        assertEquals(meetTest, contactManager.getPastMeeting(meetTest.getId()));
+        Assert.assertEquals(meetTest, contactManager.getPastMeeting(meetTest.getId()));
 
     }
 
@@ -110,7 +111,7 @@ public class ContactManagerTest {
     @Test
     public void getPastMeetingReturnsNullTest() {
         //no past meeting is added to the list
-        assertEquals(null, contactManager.getPastMeeting(123456));
+        Assert.assertEquals(null, contactManager.getPastMeeting(123456));
     }
 
     @Test
@@ -118,7 +119,7 @@ public class ContactManagerTest {
         contacts2 = generateListOfContacts2();
         int id = contactManager.addFutureMeeting(contacts2, march302014);
 
-        assertEquals(contactManager.getFutureMeeting(id).getId(), id);
+        Assert.assertEquals(contactManager.getFutureMeeting(id).getId(), id);
 
     }
 
@@ -143,7 +144,7 @@ public class ContactManagerTest {
     @Test
     public void getFutureMeetingReturnsNullTest() {
 
-        assertEquals(null, contactManager.getFutureMeeting(12345));
+        Assert.assertEquals(null, contactManager.getFutureMeeting(12345));
     }
 
     @Test
@@ -152,7 +153,7 @@ public class ContactManagerTest {
         int idFuture = contactManager.addFutureMeeting(contacts2, march302014);
 
         assertNotNull(contactManager.getMeeting(idFuture));
-        assertEquals(idFuture, contactManager.getMeeting(idFuture).getId());
+        Assert.assertEquals(idFuture, contactManager.getMeeting(idFuture).getId());
 
     }
 
@@ -173,7 +174,7 @@ public class ContactManagerTest {
         int id=meeting.getId();
         PastMeeting pastMeeting=(PastMeeting)contactManager.getMeeting(id);
 
-        assertEquals("brief but productive",pastMeeting.getNotes());
+        Assert.assertEquals("brief but productive", pastMeeting.getNotes());
 
     }
 
@@ -312,7 +313,7 @@ public class ContactManagerTest {
 
         for (PastMeeting curr : pastMeetingJamie) {
 
-            assertEquals(contacts2, curr.getContacts());
+            Assert.assertEquals(contacts2, curr.getContacts());
         }
     }
 
@@ -335,7 +336,7 @@ public class ContactManagerTest {
 
 
         for (PastMeeting curr : pastMeetingJamie) {
-            assertEquals("notes", curr.getNotes());
+            Assert.assertEquals("notes", curr.getNotes());
         }
 
     }
@@ -390,8 +391,8 @@ public class ContactManagerTest {
         List<PastMeeting> testPastMeetingsList = contactManager.getPastMeetingList(c);
         for (PastMeeting curr : testPastMeetingsList) {
 
-            assertEquals("Organisational set up", curr.getNotes());
-            assertEquals(december72013, curr.getDate());
+            Assert.assertEquals("Organisational set up", curr.getNotes());
+            Assert.assertEquals(december72013, curr.getDate());
         }
 
     }
@@ -456,8 +457,8 @@ public class ContactManagerTest {
         //check that looking for a past meeting retrieves the converted one correctly
         for (PastMeeting curr : newPastMeeting) {
 
-            assertEquals(text, curr.getNotes());
-            assertEquals(curr, contactManager.getMeeting(id));
+            Assert.assertEquals(text, curr.getNotes());
+            Assert.assertEquals(curr, contactManager.getMeeting(id));
         }
     }
 
@@ -501,7 +502,7 @@ public class ContactManagerTest {
         }
         for (PastMeeting curr : contactManager.getPastMeetingList(contactShirley)) {
 
-            assertEquals("test notes", curr.getNotes());
+            Assert.assertEquals("test notes", curr.getNotes());
         }
 
     }
@@ -521,7 +522,7 @@ public class ContactManagerTest {
             newContact = curr;
         }
         assertNotNull(contactManager.getContacts(idNewContact));
-        assertEquals("test", newContact.getNotes());
+        Assert.assertEquals("test", newContact.getNotes());
 
         assertEquals(1, newContacts.size());
 
@@ -569,7 +570,7 @@ public class ContactManagerTest {
         assertNotNull(jane);
         assertNotNull(tim);
 
-        assertEquals(contacts3, contactManager.getContacts(idSteve, idJane, idTim));
+        Assert.assertEquals(contacts3, contactManager.getContacts(idSteve, idJane, idTim));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -594,7 +595,7 @@ public class ContactManagerTest {
 
         Set<Contact> contactContainingName = contactManager.getContacts("v");
 
-        assertEquals(2, contactManager.getContacts("v").size());
+        Assert.assertEquals(2, contactManager.getContacts("v").size());
 
         for (Contact curr : contactContainingName) {
             if (curr.getName().equals("Steve Austin")) {
@@ -606,8 +607,8 @@ public class ContactManagerTest {
             }
         }
 
-        assertEquals("Steve Austin", steve.getName());
-        assertEquals("Tim Davies", tim.getName());
+        Assert.assertEquals("Steve Austin", steve.getName());
+        Assert.assertEquals("Tim Davies", tim.getName());
 
     }
 

@@ -1,3 +1,5 @@
+package com.liliya.contactmanager;
+
 /**
  * A contact is a person we are making business with or may do in the future.
  * Contacts have an ID (unique), a name (probably unique, but maybe

@@ -1,3 +1,4 @@
+package com.liliya.contactmanager;
 
 import org.junit.*;
 import static org.junit.Assert.*;
@@ -42,7 +43,7 @@ public class MeetingTest {
     public void getMeetingDateTest(){
         Calendar expectedDate=Calendar.getInstance();
         expectedDate.set(2012,Calendar.DECEMBER,11, 10, 00);
-        assertEquals(expectedDate, testMeeting.getDate());
+        Assert.assertEquals(expectedDate, testMeeting.getDate());
 
     }
 
@@ -60,7 +61,7 @@ public class MeetingTest {
         expectedContacts.add(contact1);
         expectedContacts.add(contact2);
 
-        assertEquals(expectedContacts.size(),testMeeting.getContacts().size());
+        Assert.assertEquals(expectedContacts.size(), testMeeting.getContacts().size());
 
         assertTrue(expectedContacts.equals(testMeeting.getContacts()));
 

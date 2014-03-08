@@ -1,3 +1,5 @@
+package com.liliya.contactmanager;
+
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.*;

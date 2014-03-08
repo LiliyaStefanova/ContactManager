@@ -1,4 +1,4 @@
-/**
+package com.liliya.contactmanager; /**
  * Created with IntelliJ IDEA.
  * User: liliya
  * Date: 11/02/14

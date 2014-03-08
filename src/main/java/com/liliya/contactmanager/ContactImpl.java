@@ -1,3 +1,5 @@
+package com.liliya.contactmanager;
+
 import java.io.Serializable;
 
 public class ContactImpl implements Contact, Serializable {

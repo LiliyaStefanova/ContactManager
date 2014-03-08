@@ -1,3 +1,4 @@
+package com.liliya.contactmanager;
 
 /**
  * A meeting to be held in the future
