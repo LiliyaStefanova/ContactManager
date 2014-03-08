@@ -5,10 +5,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 
+import java.io.File;
 import java.util.*;
-
-//need to write IO test cases
-//generate java docs
 
 public class ContactManagerTest {
 
@@ -70,13 +68,17 @@ public class ContactManagerTest {
         contactManager.addFutureMeeting(nonExistentContact, march302014);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void addDuplicateFutureMeetingTest() {
         contacts2 = generateListOfContacts2();
-        contactManager.addFutureMeeting(contacts2, march302014);
-        int id2 = contactManager.addFutureMeeting(contacts2, march302014);
+        Calendar date1=Calendar.getInstance();
+        date1.set(2014, Calendar.MAY, 24);
+        Calendar date2=Calendar.getInstance();
+        date2.set(2014, Calendar.MAY, 24);
+        contactManager.addFutureMeeting(contacts2, date1);
+        int id2 = contactManager.addFutureMeeting(contacts2, date2);
 
-        assertNull(contactManager.getMeeting(id2));
+        //assertNull(contactManager.getMeeting(id2));
     }
 
     @Test
@@ -394,7 +396,7 @@ public class ContactManagerTest {
 
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void addNewPastMeetingDuplicate() {
         contacts2 = generateListOfContacts2();
         contactManager.addNewPastMeeting(contacts2, december152013, "test");
@@ -624,7 +626,9 @@ public class ContactManagerTest {
 
     @Test
     public void saveDataToFileTest() {
+        contactManager.flush();
 
+        contactManager = new ContactManagerImpl(true);
         //set up a contact register
         contactManager.addNewContact("John", "investor");
         contactManager.addNewContact("Tom", "investor");
@@ -636,6 +640,8 @@ public class ContactManagerTest {
         Set<Contact> contacts1 = contactManager.getContacts("o");
         //add a meeting to current instance
         int idRecord = contactManager.addFutureMeeting(contacts1, april302014);
+        int idJim=((Contact) contactManager.getContacts("Jim").toArray()[0]).getId();
+
         //flush first instance
         contactManager.flush();
 
@@ -663,6 +669,10 @@ public class ContactManagerTest {
         for (Contact c : contactManagerThirdInstance.getContacts("Tom")) {
             System.out.println(c.getName());
         }
+
+        int idJimAfterFlushing=((Contact) contactManagerThirdInstance.getContacts("Jim").toArray()[0]).getId();
+        assertEquals(idJim, idJimAfterFlushing);
+
 
     }
 
