@@ -40,6 +40,14 @@ public class ContactManagerImpl implements ContactManager, Serializable {
 
     }
 
+    /**
+     * Method adds future meeting to the list
+     * @param contacts a list of contacts that will participate in the meeting
+     * @param date the date on which the meeting will take place
+     * @return the id of the meeting
+     * @throws IllegalArgumentException if the date is specified in the past or contact does not exist
+     * An exception will also be thrown if a meeting with same date/time and contacts already exists
+     */
     @Override
     public int addFutureMeeting(Set<Contact> contacts, Calendar date) {
         int id = 0;
@@ -69,13 +77,14 @@ public class ContactManagerImpl implements ContactManager, Serializable {
             allMeetings.add(newFutureMeeting);
             id=newFutureMeeting.getId();
         } else {
-            System.out.println("Meeting already exists!");
+            //throwing a runtime exception if the
+            throw new IllegalArgumentException("Meeting already exists!");
         }
         return id;
     }
 
     @Override
-    public PastMeeting getPastMeeting(int id) {
+    public PastMeeting getPastMeeting(int id)  {
         Meeting meeting = null;
         PastMeeting pastMeeting = null;
         for (Meeting curr : allMeetings) {
@@ -98,7 +107,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     }
 
     @Override
-    public FutureMeeting getFutureMeeting(int id) {
+    public FutureMeeting getFutureMeeting(int id)  {
         Meeting meeting = null;
         FutureMeeting futureMeeting = null;
         for (Meeting curr : allMeetings) {
@@ -251,6 +260,9 @@ public class ContactManagerImpl implements ContactManager, Serializable {
      * @param contacts a list of participants
      * @param date the date on which the meeting took place
      * @param text messages to be added about the meeting.
+     * @throws IllegalArgumentException if the date is in the future or the list of contacts is empty
+     * @throws NullPointerException is one of the params is missing
+     * Also throws and illegal argument exception if a meeting with the same date/time and contacts already exists
      */
     @Override
     public void addNewPastMeeting(Set<Contact> contacts, Calendar date, String text) {
@@ -284,6 +296,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         if (!meetingExists(contacts, date)) {
             allMeetings.add(newPastMeeting);
         } else {
+            //throws a Runtime exception if a meeting with the same date/time and contacts is in the list already
             throw new IllegalArgumentException("Meeting already exists!");
         }
     }
@@ -297,7 +310,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
      * @param text notes to be added about the meeting.
      */
     @Override
-    public void addMeetingNotes(int id, String text) {
+    public void addMeetingNotes(int id, String text)  {
         Calendar now = Calendar.getInstance();
         Meeting convertedToPastMeeting = null;
         Meeting updatedPastMeeting = null;
@@ -366,7 +379,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     }
 
     @Override
-    public Set<Contact> getContacts(String name) {
+    public Set<Contact> getContacts(String name)  {
         Set<Contact> contactsContainingName = new HashSet<Contact>();
         if (name == null) {
             throw new NullPointerException("Name provided is not valid");
