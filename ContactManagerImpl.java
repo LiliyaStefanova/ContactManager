@@ -22,7 +22,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
 
         if (deserialise) {
             //file is loaded when the program starts, i.e. when a new Contact manager object is created
-            File f = new File(FILENAME);
+            File f = new File("."+File.separator+FILENAME);
             if (f.exists() && f.length() > 0) {
                 decodeFile();
             } else if (f.exists() && f.length() == 0) {
@@ -129,7 +129,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     }
     /**
      * This method retrieves meetings that a contact attended and returns them in a list
-     * Meetings are chronologically sorted by dat and time
+     * Meetings are chronologically sorted by date and time
      * A tree set structure is used to eliminate duplicates and allow sorting
      * @param contact
      * @return list of meetings that took place on that day
@@ -284,7 +284,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
         if (!meetingExists(contacts, date)) {
             allMeetings.add(newPastMeeting);
         } else {
-            System.out.println("Meeting already exists!");
+            throw new IllegalArgumentException("Meeting already exists!");
         }
     }
 
@@ -452,7 +452,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     private void decodeFile() {
         XMLDecoder decode = null;
         try {
-            decode = new XMLDecoder(new BufferedInputStream(new FileInputStream(FILENAME)));
+            decode = new XMLDecoder(new BufferedInputStream(new FileInputStream("."+File.separator+FILENAME)));
             allMeetings = (List<Meeting>) decode.readObject();
             allContacts = (Set<Contact>) decode.readObject();
 
@@ -474,7 +474,7 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     private void encodeFile() {
         XMLEncoder encode = null;
         try {
-            encode = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(FILENAME)));
+            encode = new XMLEncoder(new BufferedOutputStream(new FileOutputStream("."+File.separator+FILENAME)));
             encode.writeObject(allMeetings);
             encode.writeObject(allContacts);
         } catch (FileNotFoundException ex) {
@@ -501,6 +501,5 @@ public class ContactManagerImpl implements ContactManager, Serializable {
     public void setAllMeetings(List<Meeting> allMeetings) {
         this.allMeetings = allMeetings;
     }
-
 
 }
