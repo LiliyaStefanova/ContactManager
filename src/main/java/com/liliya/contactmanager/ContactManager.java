@@ -78,8 +78,7 @@ public interface ContactManager {
      * @param contact one of the user’s contacts
      * @return the list of future meeting(s) scheduled with this contact (maybe empty).
      * @throws IllegalArgumentException if the contact does not exist
-    2
-     */
+         */
     List<PastMeeting> getPastMeetingList(Contact contact);
     /**
      * Create a new record for a meeting that took place in the past.
